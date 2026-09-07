@@ -332,6 +332,9 @@
     <string name="sub_setting_user_agent" translatable="false">User Agent</string>
     <string name="sub_setting_request_headers">请求头（JSON 格式）</string>
     <string name="sub_setting_filter">别名正则过滤</string>
+    <string name="sub_setting_override_address">覆盖地址</string>
+    <string name="sub_setting_override_port">覆盖端口</string>
+    <string name="sub_setting_override_tip">留空则保留订阅中的值</string>
     <string name="sub_setting_enable">启用更新</string>
     <string name="sub_auto_update">启用自动更新</string>
     <string name="sub_allow_insecure_url">允许不安全的 HTTP 地址</string>
@@ -341,6 +344,7 @@
     <string name="sub_setting_entry_proxy_tip">所选代理会添加到该订阅中每个配置的前面，作为该配置代理链的入口节点。</string>
     <string name="sub_setting_exit_proxy_tip">所选代理会添加到该订阅中每个配置的后面，作为该配置代理链的出口节点。</string>
     <string name="toast_invalid_update_interval">更新间隔无效，最小值为 15 分钟。</string>
+    <string name="toast_invalid_override_port">覆盖端口无效，请输入 1 到 65535 之间的数字。</string>
     <string name="title_sub_update">更新订阅</string>
     <string name="title_ping_all_server">测试 TCP 延迟（TCPing）</string>
     <string name="title_real_ping_all_server">测试真连接延迟</string>

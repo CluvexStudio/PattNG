@@ -332,6 +332,9 @@
     <string name="sub_setting_user_agent" translatable="false">User Agent</string>
     <string name="sub_setting_request_headers">سرآیندهای درخواست (قالب JSON)</string>
     <string name="sub_setting_filter">فیلتر عبارت منظم برای نام‌ها</string>
+    <string name="sub_setting_override_address">جایگزینی نشانی</string>
+    <string name="sub_setting_override_port">جایگزینی پورت</string>
+    <string name="sub_setting_override_tip">برای نگه داشتن مقدار اشتراک خالی بگذارید</string>
     <string name="sub_setting_enable">فعال کردن به‌روزرسانی</string>
     <string name="sub_auto_update">فعال سازی به‌روزرسانی خودکار</string>
     <string name="sub_allow_insecure_url">مجاز کردن آدرس HTTP ناامن</string>
@@ -341,6 +344,7 @@
     <string name="sub_setting_entry_proxy_tip">پروکسی انتخاب‌شده پیش از هر پروفایل این اشتراک، به‌عنوان حلقهٔ ورودی زنجیرهٔ پروکسی آن پروفایل اضافه می‌شود.</string>
     <string name="sub_setting_exit_proxy_tip">پروکسی انتخاب‌شده پس از هر پروفایل این اشتراک، به‌عنوان حلقهٔ خروجی زنجیرهٔ پروکسی آن پروفایل اضافه می‌شود.</string>
     <string name="toast_invalid_update_interval">بازه بروزرسانی نامعتبر است. حداقل مقدار 15 دقیقه است.</string>
+    <string name="toast_invalid_override_port">پورت جایگزین نامعتبر است. عددی بین 1 تا 65535 وارد کنید.</string>
     <string name="title_sub_update">به‌روزرسانی گروه فعلی اشتراک</string>
     <string name="title_ping_all_server">آزمایش تأخیر TCP (TCPing)</string>
     <string name="title_real_ping_all_server">آزمایش تأخیر واقعی</string>

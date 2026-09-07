@@ -332,6 +332,9 @@
     <string name="sub_setting_user_agent" translatable="false">User Agent</string>
     <string name="sub_setting_request_headers">رؤوس الطلب (بتنسيق JSON)</string>
     <string name="sub_setting_filter">مرشح تعبير نمطي للملاحظات</string>
+    <string name="sub_setting_override_address">استبدال العنوان</string>
+    <string name="sub_setting_override_port">استبدال المنفذ</string>
+    <string name="sub_setting_override_tip">اتركه فارغًا للإبقاء على القيمة من الاشتراك</string>
     <string name="sub_setting_enable">تفعيل التحديث</string>
     <string name="sub_auto_update">تفعيل التحديث التلقائي</string>
     <string name="sub_allow_insecure_url">السماح بعنوان HTTP غير آمن</string>
@@ -341,6 +344,7 @@
     <string name="sub_setting_entry_proxy_tip">يُضاف الوكيل المحدد قبل كل ملف تعريف في هذا الاشتراك كحلقة الدخول في سلسلة الوكلاء لذلك الملف.</string>
     <string name="sub_setting_exit_proxy_tip">يُضاف الوكيل المحدد بعد كل ملف تعريف في هذا الاشتراك كحلقة الخروج في سلسلة الوكلاء لذلك الملف.</string>
     <string name="toast_invalid_update_interval">فاصل التحديث غير صالح. الحد الأدنى هو 15 دقيقة.</string>
+    <string name="toast_invalid_override_port">منفذ الاستبدال غير صالح. استخدم قيمة بين 1 و 65535.</string>
     <string name="title_sub_update">تحديث الاشتراك</string>
     <string name="title_ping_all_server">اختبار تأخير TCP (TCPing)</string>
     <string name="title_real_ping_all_server">اختبار زمن الاستجابة الفعلي</string>

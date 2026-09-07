@@ -425,6 +425,8 @@ object AngConfigManager {
                 if (!matched) return null
             }
 
+            applySubscriptionOverrides(config, subItem)
+
             config.subscriptionId = subid
             config.description = generateDescription(config)
 
@@ -433,6 +435,19 @@ object AngConfigManager {
             LogUtil.e(AppConfig.TAG, "Failed to parse config", e)
             return null
         }
+    }
+
+    /**
+     * Replaces the address and/or port of a profile imported from a subscription with the
+     * override values configured on that subscription. Blank values leave the profile unchanged.
+     *
+     * @param config The parsed profile.
+     * @param subItem The subscription the profile belongs to, or null.
+     */
+    internal fun applySubscriptionOverrides(config: ProfileItem, subItem: SubscriptionItem?) {
+        subItem ?: return
+        subItem.overrideAddress?.trim()?.takeIf { it.isNotEmpty() }?.let { config.server = it }
+        subItem.overridePort?.takeIf { it in 1..65535 }?.let { config.serverPort = it.toString() }
     }
 
     /**

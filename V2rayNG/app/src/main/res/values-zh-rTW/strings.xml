@@ -332,6 +332,9 @@
     <string name="sub_setting_user_agent" translatable="false">User Agent</string>
     <string name="sub_setting_request_headers">請求標頭（JSON 格式）</string>
     <string name="sub_setting_filter">備註篩選條件（正規表示式）</string>
+    <string name="sub_setting_override_address">覆蓋位址</string>
+    <string name="sub_setting_override_port">覆蓋埠</string>
+    <string name="sub_setting_override_tip">留空則保留訂閱中的值</string>
     <string name="sub_setting_enable">啟用更新</string>
     <string name="sub_auto_update">啟用自動更新</string>
     <string name="sub_allow_insecure_url">允許不安全的 HTTP 位址</string>
@@ -341,6 +344,7 @@
     <string name="sub_setting_entry_proxy_tip">所選代理會加在此訂閱中每個設定檔之前，作為該設定檔代理鏈的入口節點。</string>
     <string name="sub_setting_exit_proxy_tip">所選代理會加在此訂閱中每個設定檔之後，作為該設定檔代理鏈的出口節點。</string>
     <string name="toast_invalid_update_interval">更新間隔無效，最小值為 15 分鐘。</string>
+    <string name="toast_invalid_override_port">覆蓋埠無效，請輸入 1 到 65535 之間的數字。</string>
     <string name="title_sub_update">更新訂閱</string>
     <string name="title_ping_all_server">測試 TCP 延遲（TCPing）</string>
     <string name="title_real_ping_all_server">測試真連接延遲</string>

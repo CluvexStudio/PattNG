@@ -332,6 +332,9 @@
     <string name="sub_setting_user_agent" translatable="false">User Agent</string>
     <string name="sub_setting_request_headers">Tiêu đề yêu cầu (định dạng JSON)</string>
     <string name="sub_setting_filter">Bộ lọc biểu thức chính quy cho tên ghi chú</string>
+    <string name="sub_setting_override_address">Ghi đè địa chỉ</string>
+    <string name="sub_setting_override_port">Ghi đè cổng</string>
+    <string name="sub_setting_override_tip">Để trống để giữ giá trị từ gói đăng ký</string>
     <string name="sub_setting_enable">Bật cập nhật</string>
     <string name="sub_auto_update">Bật tự động cập nhật</string>
     <string name="sub_allow_insecure_url">Cho phép địa chỉ HTTP không an toàn</string>
@@ -341,6 +344,7 @@
     <string name="sub_setting_entry_proxy_tip">Proxy đã chọn được thêm trước mỗi cấu hình trong gói đăng ký, làm mắt xích đầu vào của chuỗi proxy cho cấu hình đó.</string>
     <string name="sub_setting_exit_proxy_tip">Proxy đã chọn được thêm sau mỗi cấu hình trong gói đăng ký, làm mắt xích đầu ra của chuỗi proxy cho cấu hình đó.</string>
     <string name="toast_invalid_update_interval">Khoảng thời gian cập nhật không hợp lệ. Giá trị tối thiểu là 15 phút.</string>
+    <string name="toast_invalid_override_port">Cổng ghi đè không hợp lệ. Hãy dùng giá trị từ 1 đến 65535.</string>
     <string name="title_sub_update">Cập nhật gói đăng ký</string>
     <string name="title_ping_all_server">Kiểm tra độ trễ TCP (TCPing)</string>
     <string name="title_real_ping_all_server">Kiểm tra độ trễ thực</string>

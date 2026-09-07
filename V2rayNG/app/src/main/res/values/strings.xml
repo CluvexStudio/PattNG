@@ -332,6 +332,9 @@
     <string name="sub_setting_user_agent" translatable="false">User Agent</string>
     <string name="sub_setting_request_headers">Request Headers (JSON format)</string>
     <string name="sub_setting_filter">Remarks filter (regular expression)</string>
+    <string name="sub_setting_override_address">Override address</string>
+    <string name="sub_setting_override_port">Override port</string>
+    <string name="sub_setting_override_tip">Leave empty to keep the value from the subscription</string>
     <string name="sub_setting_enable">Enable update</string>
     <string name="sub_auto_update">Enable automatic update</string>
     <string name="sub_allow_insecure_url">Allow insecure HTTP address</string>
@@ -341,6 +344,7 @@
     <string name="sub_setting_entry_proxy_tip">The selected proxy is added before every profile in this subscription as the entry link in the proxy chain for that profile.</string>
     <string name="sub_setting_exit_proxy_tip">The selected proxy is added after every profile in this subscription as the exit link in the proxy chain for that profile.</string>
     <string name="toast_invalid_update_interval">Invalid update interval. Minimum is 15 minutes.</string>
+    <string name="toast_invalid_override_port">Invalid override port. Use a value from 1 to 65535.</string>
     <string name="title_sub_update">Update subscription</string>
     <string name="title_ping_all_server">Test TCP delays (TCPing)</string>
     <string name="title_real_ping_all_server">Test real delays</string>
