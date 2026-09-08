@@ -158,11 +158,31 @@ object CoreConfigManager {
             val templateConfig = initV2rayConfig(configContext)
             templateConfig.inbounds.firstOrNull { it.tag == "tun" }?.let { inboundTun ->
                 inboundTun.settings?.mtu = SettingsManager.getVpnMtu()
+                // The injected inbound must be able to map the fake IPs of a fakedns config back
+                // to domains; the user's own inbounds are left as written
+                if (hasFakeDnsServer(json)) {
+                    inboundTun.sniffing?.destOverride?.let { if ("fakedns" !in it) it.add("fakedns") }
+                }
                 inboundsJson.add(JsonUtil.parseString(JsonUtil.toJson(inboundTun)))
             }
         }
 
         return JsonUtil.toJsonPretty(json)?.let { ConfigResult(true, configContext.guid, it) } ?: result
+    }
+
+    /**
+     * Check whether the DNS servers of a custom config include fakedns, written either as the
+     * plain "fakedns" string or as a server object whose address is "fakedns".
+     */
+    private fun hasFakeDnsServer(json: JsonObject): Boolean {
+        val servers = json.get("dns")?.takeIf { it.isJsonObject }?.asJsonObject
+            ?.get("servers")?.takeIf { it.isJsonArray }?.asJsonArray
+            ?: return false
+        return servers.any { server ->
+            val address = if (server.isJsonObject) server.asJsonObject.get("address") else server
+            address != null && address.isJsonPrimitive && address.asJsonPrimitive.isString
+                    && address.asString == "fakedns"
+        }
     }
 
     /**
