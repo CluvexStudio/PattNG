@@ -60,9 +60,34 @@ jobs:
         path: ${{ github.workspace }}/libs
         key: libhevtun-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('.git/modules/hev-socks5-tunnel/HEAD') }}-${{ hashFiles('compile-hevtun.sh') }}
 
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+    - name: Restore cached libaether
+      id: cache-libaether-restore
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ github.workspace }}/libs-aether
+        key: libaether-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('.git/modules/aether/HEAD') }}-${{ hashFiles('compile-aether.sh') }}
+
+    - name: Build libaether
+      if: steps.cache-libaether-restore.outputs.cache-hit != 'true'
+      run: |
+        bash compile-aether.sh
+
+    - name: Save libaether
+      if: steps.cache-libaether-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ github.workspace }}/libs-aether
+        key: libaether-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('.git/modules/aether/HEAD') }}-${{ hashFiles('compile-aether.sh') }}
+
     - name: Copy libhevtun
       run: |
         cp -r ${{ github.workspace }}/libs ${{ github.workspace }}/V2rayNG/app
+        cp -r ${{ github.workspace }}/libs-aether/. ${{ github.workspace }}/V2rayNG/app/libs/
 
     - name: Fetch AndroidLibXrayLite tag
       run: |
