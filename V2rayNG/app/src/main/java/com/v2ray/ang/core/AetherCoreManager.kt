@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -32,6 +33,7 @@ object AetherCoreManager {
 
     private const val BINARY_NAME = "libaether.so"
     private const val PROBE_TIMEOUT_MS = 1000
+    private const val READY_POLL_MS = 500L
 
     private val logLevels = setOf("ERROR", "WARN", "INFO", "DEBUG", "TRACE")
 
@@ -147,7 +149,21 @@ object AetherCoreManager {
         lifecycle.execute { current.process?.destroy() }
     }
 
-    fun isListening(): Boolean = isRunning && acceptsConnections(socksPort)
+    suspend fun awaitListening(timeoutMs: Long): Boolean =
+        awaitReady(timeoutMs, READY_POLL_MS, { isRunning }, { acceptsConnections(socksPort) })
+
+    internal suspend fun awaitReady(
+        timeoutMs: Long,
+        pollMs: Long,
+        running: () -> Boolean,
+        listening: () -> Boolean,
+    ): Boolean = withTimeoutOrNull(timeoutMs) {
+        while (running()) {
+            if (withContext(Dispatchers.IO) { listening() }) return@withTimeoutOrNull true
+            delay(pollMs)
+        }
+        false
+    } ?: false
 
     internal fun acceptsConnections(port: Int): Boolean = try {
         Socket().use { it.connect(InetSocketAddress(AppConfig.LOOPBACK, port), PROBE_TIMEOUT_MS) }

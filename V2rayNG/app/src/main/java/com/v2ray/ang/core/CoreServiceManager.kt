@@ -48,6 +48,8 @@ import java.net.InetSocketAddress
 
 object CoreServiceManager {
 
+    private const val AETHER_WARM_UP_MS = 30_000L
+
     private val coreController: CoreController = CoreNativeManager.newCoreController(CoreCallback())
     private val mMsgReceive = ReceiveMessageHandler()
     private var currentConfig: ProfileItem? = null
@@ -348,7 +350,7 @@ object CoreServiceManager {
 
         connectionTestScope.coroutineContext.cancelChildren()
         connectionTestScope.launch {
-            if (currentConfig?.configType == EConfigType.AETHER && !AetherCoreManager.isListening()) {
+            if (currentConfig?.configType == EConfigType.AETHER && !AetherCoreManager.awaitListening(AETHER_WARM_UP_MS)) {
                 val reason = if (AetherCoreManager.isRunning) R.string.aether_core_connecting else R.string.aether_core_stopped
                 val stalled = ConnectionTestResult(delayMillis = -1L, errorMessage = service.getString(reason))
                 withContext(Dispatchers.Main.immediate) {

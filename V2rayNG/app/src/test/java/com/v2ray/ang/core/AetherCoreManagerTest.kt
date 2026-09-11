@@ -8,6 +8,7 @@ import com.v2ray.ang.enums.AetherProtocol
 import com.v2ray.ang.enums.AetherScanMode
 import com.v2ray.ang.enums.AetherTransport
 import com.v2ray.ang.enums.EConfigType
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -180,6 +181,23 @@ class AetherCoreManagerTest {
         assertEquals(Log.INFO, AetherCoreManager.outputPriority("[2026-09-11T10:00:00.000Z INFO  aether] [+] identity ready"))
         assertEquals(Log.DEBUG, AetherCoreManager.outputPriority("[2026-09-11T10:00:00.000Z DEBUG aether::quic] packet"))
         assertEquals(Log.DEBUG, AetherCoreManager.outputPriority("[2026-09-11T10:00:00.000Z TRACE aether] packet"))
+    }
+
+    @Test
+    fun theTestWaitsUntilTheCoreStartsListening() = runBlocking {
+        var polls = 0
+        assertTrue(AetherCoreManager.awaitReady(5_000, 10, { true }, { ++polls >= 3 }))
+        assertEquals(3, polls)
+    }
+
+    @Test
+    fun theTestGivesUpWhenTheCoreStopsOrTakesTooLong() = runBlocking {
+        assertFalse(AetherCoreManager.awaitReady(5_000, 10, { false }, { true }))
+
+        var polls = 0
+        assertFalse(AetherCoreManager.awaitReady(5_000, 10, { polls < 2 }, { polls++; false }))
+
+        assertFalse(AetherCoreManager.awaitReady(100, 10, { true }, { false }))
     }
 
     @Test
