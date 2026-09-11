@@ -1,113 +1,95 @@
 {
-  "stats":{},
+  "stats": {},
   "log": {
     "loglevel": "warning"
   },
-  "policy":{
-      "levels": {
-        "0": {
-          "uplinkOnly": 0,
-          "downlinkOnly": 0
-        },
-        "12": {
-          "connIdle": 12,
-          "uplinkOnly": 0,
-          "downlinkOnly": 0
-        }
+  "policy": {
+    "levels": {
+      "0": {
+        "uplinkOnly": 0,
+        "downlinkOnly": 0
       },
-      "system": {
-        "statsOutboundUplink": true,
-        "statsOutboundDownlink": true
+      "12": {
+        "connIdle": 12,
+        "uplinkOnly": 0,
+        "downlinkOnly": 0
       }
-  },
-  "inbounds": [{
-    "tag": "socks",
-    "port": 10808,
-    "protocol": "socks",
-    "settings": {
-      "auth": "noauth",
-      "udp": true
     },
-    "sniffing": {
-      "enabled": true,
-      "destOverride": [
-        "http",
-        "tls",
-		"quic"
-      ]
+    "system": {
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
     }
   },
-  {
-    "tag": "tun",
-    "protocol": "tun",
-    "settings": {
-      "name": "xray0",
-      "MTU": 1500
+  "inbounds": [
+    {
+      "tag": "socks",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
     },
-    "sniffing": {
-      "enabled": true,
-      "destOverride": [
-        "http",
-        "tls",
-		"quic"
-      ]
+    {
+      "tag": "tun",
+      "protocol": "tun",
+      "settings": {
+        "name": "xray0",
+        "MTU": 1500
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
     }
-  }
-],
-  "outbounds": [{
-    "tag": "proxy",
-    "protocol": "vmess",
-    "settings": {
-      "vnext": [
-        {
-          "address": "v2ray.cool",
-          "port": 10086,
-          "users": [
-            {
-              "id": "a3482e88-686a-4a58-8126-99c9df64b7bf",
-              "alterId": 0,
-              "security": "auto"
-            }
-          ]
-        }
-      ],
-      "servers": [
-        {
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "vmess",
+      "settings": {
         "address": "v2ray.cool",
-        "method": "chacha20",
-        "ota": false,
-        "password": "123456",
         "port": 10086
+      },
+      "streamSettings": {
+        "network": "tcp"
+      },
+      "mux": {
+        "enabled": false
       }
-      ]
     },
-    "streamSettings": {
-      "network": "tcp"
+    {
+      "protocol": "freedom",
+      "tag": "direct"
     },
-    "mux": {
-      "enabled": false
-    }
-  },
-  {
-    "protocol": "freedom",
-    "tag": "direct"
-  },
-  {
-    "protocol": "blackhole",
-    "tag": "block",
-    "settings": {
-      "response": {
-        "type": "http"
+    {
+      "protocol": "blackhole",
+      "tag": "block",
+      "settings": {
+        "response": {
+          "type": "http"
+        }
       }
     }
-  }
   ],
   "routing": {
-      "domainStrategy": "AsIs",
-      "rules": []
+    "domainStrategy": "AsIs",
+    "rules": []
   },
   "dns": {
-      "hosts": {},
-      "servers": []
+    "hosts": {},
+    "servers": []
   }
 }

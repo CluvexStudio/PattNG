@@ -267,6 +267,7 @@ object CoreOutboundBuilder {
         outboundBean?.settings?.let { wireguard ->
             wireguard.secretKey = profileItem.secretKey
             wireguard.address = addresses
+            wireguard.port = null
             wireguard.peers?.firstOrNull()?.let { peer ->
                 peer.publicKey = profileItem.publicKey.orEmpty()
                 peer.preSharedKey = profileItem.preSharedKey?.nullIfBlank()
