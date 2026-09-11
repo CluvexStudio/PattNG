@@ -81,6 +81,15 @@ class AetherIdentityManagerTest {
     }
 
     @Test
+    fun wireguardAndGoolShareAKeyWhileMasqueHasItsOwn() {
+        assertTrue(AetherIdentityManager.sharesIdentity(AetherProtocol.MASQUE, AetherProtocol.MASQUE))
+        assertTrue(AetherIdentityManager.sharesIdentity(AetherProtocol.WIREGUARD, AetherProtocol.GOOL))
+        assertTrue(AetherIdentityManager.sharesIdentity(AetherProtocol.GOOL, AetherProtocol.GOOL))
+        assertFalse(AetherIdentityManager.sharesIdentity(AetherProtocol.MASQUE, AetherProtocol.WIREGUARD))
+        assertFalse(AetherIdentityManager.sharesIdentity(AetherProtocol.GOOL, AetherProtocol.MASQUE))
+    }
+
+    @Test
     fun theCoreSaysWhenANewKeyIsReady() {
         val single = "[2026-09-11T10:00:00.000Z INFO  aether] [+] identity ready: device=a1b2 ipv4=172.16.0.2 ipv6=2606::1"
         val pair = "[2026-09-11T10:00:00.000Z INFO  aether] [+] outer device=a1b2 ipv4=172.16.0.2 | inner device=c3d4 ipv4=172.16.0.2"

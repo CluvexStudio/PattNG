@@ -1,6 +1,7 @@
 package com.v2ray.ang.service
 
 import android.content.Context
+import com.v2ray.ang.core.AetherDelayTester
 import com.v2ray.ang.core.CoreConfigManager
 import com.v2ray.ang.core.CoreNativeManager
 import com.v2ray.ang.dto.RealPingEvent
@@ -37,8 +38,6 @@ internal object RealPingExecutionLimiter {
         }
     }
 }
-
-internal fun isBatchTestable(configType: EConfigType): Boolean = configType != EConfigType.AETHER
 
 /**
  * Worker that runs a batch of real-ping tests independently.
@@ -110,7 +109,9 @@ class RealPingWorkerService(
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
-        if (!isBatchTestable(config.configType)) return null
+        if (config.configType == EConfigType.AETHER) {
+            return AetherDelayTester.measure(context, guid, config, SettingsManager.getDelayTestUrl())
+        }
         if (!config.configType.isComplexType()
             && config.configType != EConfigType.HYSTERIA2
             && config.configType != EConfigType.WIREGUARD
@@ -135,11 +136,13 @@ class RealPingWorkerService(
         }
     }
 
-    private fun startTcping(guid: String): Long? {
+    private suspend fun startTcping(guid: String): Long? {
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
-        if (!isBatchTestable(config.configType)) return null
+        if (config.configType == EConfigType.AETHER) {
+            return AetherDelayTester.measure(context, guid, config, SettingsManager.getDelayTestUrl())
+        }
         if (!config.configType.isComplexType()
             && config.configType != EConfigType.HYSTERIA2
             && config.configType != EConfigType.WIREGUARD

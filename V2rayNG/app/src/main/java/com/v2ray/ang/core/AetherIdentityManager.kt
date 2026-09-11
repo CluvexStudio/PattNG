@@ -87,6 +87,9 @@ object AetherIdentityManager {
         return AetherIdentity(deviceId, fields["ipv4"].orEmpty(), fields["ipv6"].orEmpty())
     }
 
+    fun sharesIdentity(first: AetherProtocol, second: AetherProtocol): Boolean =
+        (first == AetherProtocol.MASQUE) == (second == AetherProtocol.MASQUE)
+
     internal fun isReady(protocol: AetherProtocol, line: String): Boolean = when (protocol) {
         AetherProtocol.GOOL -> goolIdentitiesReady.containsMatchIn(line)
         AetherProtocol.MASQUE, AetherProtocol.WIREGUARD -> identityReady.containsMatchIn(line)

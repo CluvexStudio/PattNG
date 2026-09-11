@@ -12,8 +12,13 @@ import com.v2ray.ang.enums.AetherScanMode
 import com.v2ray.ang.enums.AetherTransport
 import com.v2ray.ang.util.LogUtil
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
@@ -74,7 +79,7 @@ object AetherCoreManager {
         }
     }
 
-    internal fun launch(context: Context, arguments: List<String>): Process {
+    internal fun startProcess(context: Context, arguments: List<String>): Process {
         val workDir = AetherIdentityManager.workDir(context).apply { mkdirs() }
         val builder = ProcessBuilder(listOf(binary(context).absolutePath) + arguments)
             .directory(workDir)
@@ -89,6 +94,31 @@ object AetherCoreManager {
         return builder.start()
     }
 
+    internal suspend fun <T> withProcess(
+        context: Context,
+        arguments: List<String>,
+        source: String,
+        onOutput: (String) -> Unit,
+        block: suspend (output: ReceiveChannel<String>) -> T?,
+    ): T? = coroutineScope {
+        val process = withContext(Dispatchers.IO) {
+            try {
+                startProcess(context, arguments)
+            } catch (e: IOException) {
+                LogUtil.e(AppConfig.TAG, "AetherCore: failed to launch $source", e)
+                null
+            }
+        } ?: return@coroutineScope null
+
+        val output = Channel<String>(Channel.UNLIMITED)
+        launch(Dispatchers.IO) { forward(process, source, onOutput, output) }
+        try {
+            block(output)
+        } finally {
+            process.destroy()
+        }
+    }
+
     internal suspend fun <T : Any> runUntil(
         context: Context,
         arguments: List<String>,
@@ -96,22 +126,8 @@ object AetherCoreManager {
         source: String,
         onOutput: (String) -> Unit,
         match: (String) -> T?,
-    ): T? = coroutineScope {
-        val process = withContext(Dispatchers.IO) {
-            try {
-                launch(context, arguments)
-            } catch (e: IOException) {
-                LogUtil.e(AppConfig.TAG, "AetherCore: failed to launch $source", e)
-                null
-            }
-        } ?: return@coroutineScope null
-
-        val reader = async(Dispatchers.IO) { firstMatch(process, source, onOutput, match) }
-        try {
-            withTimeoutOrNull(timeoutMs) { reader.await() }
-        } finally {
-            process.destroy()
-        }
+    ): T? = withProcess(context, arguments, source, onOutput) { output ->
+        withTimeoutOrNull(timeoutMs) { output.receiveAsFlow().mapNotNull(match).firstOrNull() }
     }
 
     @Synchronized
@@ -131,14 +147,13 @@ object AetherCoreManager {
         lifecycle.execute { current.process?.destroy() }
     }
 
-    fun isListening(): Boolean {
-        if (!isRunning) return false
-        return try {
-            Socket().use { it.connect(InetSocketAddress(AppConfig.LOOPBACK, socksPort), PROBE_TIMEOUT_MS) }
-            true
-        } catch (_: IOException) {
-            false
-        }
+    fun isListening(): Boolean = isRunning && acceptsConnections(socksPort)
+
+    internal fun acceptsConnections(port: Int): Boolean = try {
+        Socket().use { it.connect(InetSocketAddress(AppConfig.LOOPBACK, port), PROBE_TIMEOUT_MS) }
+        true
+    } catch (_: IOException) {
+        false
     }
 
     internal fun relay(line: String, source: String) {
@@ -183,7 +198,7 @@ object AetherCoreManager {
     private fun open(target: Session, context: Context, arguments: List<String>) {
         if (session !== target) return
         val process = try {
-            launch(context, arguments)
+            startProcess(context, arguments)
         } catch (e: IOException) {
             LogUtil.e(AppConfig.TAG, "AetherCore: failed to launch the core", e)
             if (release(target)) target.onExit()
@@ -193,22 +208,18 @@ object AetherCoreManager {
         thread(name = "aether-core-output", isDaemon = true) { watch(target, process) }
     }
 
-    private fun <T : Any> firstMatch(
-        process: Process,
-        source: String,
-        onOutput: (String) -> Unit,
-        match: (String) -> T?,
-    ): T? = try {
-        process.inputStream.bufferedReader().useLines { lines ->
-            lines.firstNotNullOfOrNull { line ->
+    private fun forward(process: Process, source: String, onOutput: (String) -> Unit, output: Channel<String>) {
+        try {
+            process.inputStream.bufferedReader().forEachLine { line ->
                 relay(line, source)
                 onOutput(line)
-                match(line)
+                output.trySend(line)
             }
+        } catch (e: IOException) {
+            LogUtil.d(AppConfig.TAG, "AetherCore: $source output closed: ${e.message}")
+        } finally {
+            output.close()
         }
-    } catch (e: IOException) {
-        LogUtil.d(AppConfig.TAG, "AetherCore: $source output closed: ${e.message}")
-        null
     }
 
     private fun watch(target: Session, process: Process) {
