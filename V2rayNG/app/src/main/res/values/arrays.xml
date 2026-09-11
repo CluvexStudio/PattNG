@@ -222,5 +222,46 @@
         <item>2</item>
     </string-array>
 
+    <string-array name="aether_protocol_entries" translatable="false">
+        <item>MASQUE</item>
+        <item>WireGuard</item>
+        <item>WARP-in-WARP</item>
+    </string-array>
+    <string-array name="aether_protocol_values" translatable="false">
+        <item>masque</item>
+        <item>wg</item>
+        <item>gool</item>
+    </string-array>
+    <string-array name="aether_transport_entries" translatable="false">
+        <item>HTTP/3</item>
+        <item>HTTP/2</item>
+    </string-array>
+    <string-array name="aether_transport_values" translatable="false">
+        <item>h3</item>
+        <item>h2</item>
+    </string-array>
+    <string-array name="aether_scan_values" translatable="false">
+        <item>turbo</item>
+        <item>balanced</item>
+        <item>thorough</item>
+        <item>stealth</item>
+        <item>ironclad</item>
+    </string-array>
+    <string-array name="aether_obfuscation_values" translatable="false">
+        <item>off</item>
+        <item>light</item>
+        <item>balanced</item>
+        <item>aggressive</item>
+    </string-array>
+    <string-array name="aether_ip_entries" translatable="false">
+        <item>IPv4</item>
+        <item>IPv6</item>
+        <item>IPv4 + IPv6</item>
+    </string-array>
+    <string-array name="aether_ip_values" translatable="false">
+        <item>v4</item>
+        <item>v6</item>
+        <item>both</item>
+    </string-array>
 
 </resources>

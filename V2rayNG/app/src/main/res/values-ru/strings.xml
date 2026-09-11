@@ -566,5 +566,58 @@
     <string name="tasker_blurb_stop">Остановить %1$s</string>
     <string name="connection_test_empty_message">подробности отсутствуют</string>
     <string name="value_unknown">неизвестно</string>
+    <string name="aether_lab_protocol">Протокол</string>
+    <string name="aether_lab_transport">Транспорт</string>
+    <string name="aether_lab_scan_mode">Режим сканирования</string>
+    <string name="aether_lab_obfuscation">Обфускация</string>
+    <string name="aether_lab_ip_version">Версия IP</string>
+    <string name="aether_lab_fragment">Фрагментировать ClientHello</string>
+    <string name="aether_lab_wiw_outer">Внешний узел</string>
+    <string name="aether_lab_wiw_inner">Внутренний узел</string>
+    <string name="aether_hint_endpoint">Оставьте пустым для сканирования</string>
+    <string name="aether_action_scan">Найти сервер</string>
+    <string name="aether_action_scanning">Сканирование…</string>
+    <string name="aether_scan_success">Сервер найден</string>
+    <string name="aether_scan_failed">Сервер не найден</string>
+    <string name="aether_invalid_endpoint">Укажите IP-адрес и порт или оставьте адрес пустым для сканирования</string>
+    <string name="aether_invalid_hop">Укажите адрес и порт, например 162.159.192.1:2408</string>
+    <string name="aether_same_hop">Узлы должны иметь разные адреса</string>
+    <string name="aether_unsupported_abi">Ядро Aether недоступно для этого устройства</string>
+    <string name="aether_core_stopped">Ядро Aether остановлено</string>
+    <string name="aether_core_connecting">Ядро Aether ещё подключается</string>
+    <string name="menu_item_import_config_manually_aether">Добавить конфигурацию Aether вручную</string>
+    <string name="aether_action_renew_key">Получить новый ключ WARP</string>
+    <string name="aether_action_renewing_key">Получение нового ключа…</string>
+    <string name="aether_confirm_renew_key">Текущий ключ WARP будет удалён, и будет зарегистрирован новый. Если регистрация не удастся, текущий ключ сохранится.</string>
+    <string name="aether_log_title">Журнал</string>
+    <string name="aether_log_empty">Здесь появятся результаты сканирования и состояние ключа WARP</string>
+    <string name="aether_log_scan_started">Поиск сервера…</string>
+    <string name="aether_log_scan_found">Найдено: %1$s</string>
+    <string name="aether_log_scan_found_hops">Найдены внешний узел %1$s и внутренний узел %2$s</string>
+    <string name="aether_log_scan_cancelled">Сканирование отменено</string>
+    <string name="aether_log_key_renewing">Удаление старого ключа WARP и регистрация нового…</string>
+    <string name="aether_log_key_renewed">Новый ключ WARP готов и будет использован при следующем подключении</string>
+    <string name="aether_log_key_renew_failed">Не удалось зарегистрировать новый ключ WARP; прежний ключ сохранён</string>
+    <string name="aether_log_masque_key_ready">Ключ MASQUE: устройство %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_masque_key_missing">Ключ MASQUE: ещё не зарегистрирован; будет создан при первом сканировании или подключении</string>
+    <string name="aether_log_wireguard_key_ready">Ключ WireGuard: устройство %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_wireguard_key_missing">Ключ WireGuard: ещё не зарегистрирован; будет создан при первом сканировании или подключении</string>
+    <string name="aether_log_outer_key_ready">Ключ внешнего узла: устройство %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_outer_key_missing">Ключ внешнего узла: ещё не зарегистрирован; будет создан при первом сканировании или подключении</string>
+    <string name="aether_log_inner_key_ready">Ключ внутреннего узла: устройство %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_inner_key_missing">Ключ внутреннего узла: ещё не зарегистрирован; будет создан при первом сканировании или подключении</string>
+    <string-array name="aether_scan_entries">
+        <item>Турбо</item>
+        <item>Сбалансированный</item>
+        <item>Тщательный</item>
+        <item>Скрытный</item>
+        <item>Надёжный</item>
+    </string-array>
+    <string-array name="aether_obfuscation_entries">
+        <item>Выкл.</item>
+        <item>Лёгкая</item>
+        <item>Сбалансированная</item>
+        <item>Агрессивная</item>
+    </string-array>
 
 </resources>

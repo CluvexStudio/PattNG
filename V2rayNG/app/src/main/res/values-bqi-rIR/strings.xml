@@ -562,5 +562,58 @@
     <string name="tasker_blurb_stop">واڌاشتن %1$s</string>
     <string name="connection_test_empty_message">دووسمندی نؽ</string>
     <string name="value_unknown">نا مؽخص</string>
+    <string name="aether_lab_protocol">پروتکل</string>
+    <string name="aether_lab_transport">حامل</string>
+    <string name="aether_lab_scan_mode">حالت اسکن</string>
+    <string name="aether_lab_obfuscation">مبهم‌سازی</string>
+    <string name="aether_lab_ip_version">نسخه IP</string>
+    <string name="aether_lab_fragment">تکه‌تکه کردن ClientHello</string>
+    <string name="aether_lab_wiw_outer">مسیر بیرونی</string>
+    <string name="aether_lab_wiw_inner">مسیر درونی</string>
+    <string name="aether_hint_endpoint">خالی بیلید تا اسکن بوهه</string>
+    <string name="aether_action_scan">اسکن سی پیدا کردن سرور</string>
+    <string name="aether_action_scanning">د حال اسکن…</string>
+    <string name="aether_scan_success">سرور پیدا بی</string>
+    <string name="aether_scan_failed">سروری پیدا نبی</string>
+    <string name="aether_invalid_endpoint">یه نشۊوی IP وو پورت بنویسین، یا نشۊوی ن خالی بیلین تا اسکن بۊ</string>
+    <string name="aether_invalid_hop">نشونی و پورت ره با هم بنویسید، مثل 162.159.192.1:2408</string>
+    <string name="aether_same_hop">دو مسیر بایس نشونی جیا داشته بوهن</string>
+    <string name="aether_unsupported_abi">هسته Aether سی ای دستگاه د دسترس نیه</string>
+    <string name="aether_core_stopped">هسته Aether وستاده</string>
+    <string name="aether_core_connecting">هسته Aether هونی وصل ابۊ</string>
+    <string name="menu_item_import_config_manually_aether">افزودن دستی کانفیگ Aether</string>
+    <string name="aether_action_renew_key">گرفتن کلید تازه WARP</string>
+    <string name="aether_action_renewing_key">د حال گرفتن کلید تازه…</string>
+    <string name="aether_confirm_renew_key">کلید ایسه WARP پاک ابۊ و یه کلید تازه ثبت ابۊ. ار ثبت نبی، کلید ایسه مۊنه.</string>
+    <string name="aether_log_title">لاگ</string>
+    <string name="aether_log_empty">نتیجه اسکنا و وضعیت کلید WARP ایچو نشووݩ داڌه ابۊ</string>
+    <string name="aether_log_scan_started">د حال اسکن سی پیدا کردن سرور…</string>
+    <string name="aether_log_scan_found">پیدا بی: %1$s</string>
+    <string name="aether_log_scan_found_hops">مسیر بیرونی %1$s و مسیر درونی %2$s پیدا بی</string>
+    <string name="aether_log_scan_cancelled">اسکن لغو بی</string>
+    <string name="aether_log_key_renewing">د حال پاک کردن کلید قبلی WARP و ثبت کلید تازه…</string>
+    <string name="aether_log_key_renewed">کلید تازه WARP آماده‌س و ز اتصال بعدی و کار ابۊ</string>
+    <string name="aether_log_key_renew_failed">ثبت کلید تازه WARP نبی؛ کلید قبلی مند</string>
+    <string name="aether_log_masque_key_ready">کلید MASQUE: دستگاه %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_masque_key_missing">کلید MASQUE: هنی ثبت نبیڌه؛ د اولین اسکن یا اتصال ثبت ابۊ</string>
+    <string name="aether_log_wireguard_key_ready">کلید WireGuard: دستگاه %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_wireguard_key_missing">کلید WireGuard: هنی ثبت نبیڌه؛ د اولین اسکن یا اتصال ثبت ابۊ</string>
+    <string name="aether_log_outer_key_ready">کلید مسیر بیرونی: دستگاه %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_outer_key_missing">کلید مسیر بیرونی: هنی ثبت نبیڌه؛ د اولین اسکن یا اتصال ثبت ابۊ</string>
+    <string name="aether_log_inner_key_ready">کلید مسیر درونی: دستگاه %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_inner_key_missing">کلید مسیر درونی: هنی ثبت نبیڌه؛ د اولین اسکن یا اتصال ثبت ابۊ</string>
+    <string-array name="aether_scan_entries">
+        <item>توربو</item>
+        <item>متعادل</item>
+        <item>دقیق</item>
+        <item>پنهونی</item>
+        <item>تضمینی</item>
+    </string-array>
+    <string-array name="aether_obfuscation_entries">
+        <item>خاموش</item>
+        <item>سبک</item>
+        <item>متعادل</item>
+        <item>شدید</item>
+    </string-array>
 
 </resources>

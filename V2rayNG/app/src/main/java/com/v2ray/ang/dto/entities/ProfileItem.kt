@@ -76,6 +76,15 @@ data class ProfileItem(
     var browserDialerMode: String? = null,
 
     var dialMode: String? = null,
+
+    var aetherProtocol: String? = null,
+    var aetherTransport: String? = null,
+    var aetherScanMode: String? = null,
+    var aetherObfuscation: String? = null,
+    var aetherIpVersion: String? = null,
+    var aetherWiwOuter: String? = null,
+    var aetherWiwInner: String? = null,
+    var aetherFragment: Boolean? = null,
 ) {
 
     companion object {

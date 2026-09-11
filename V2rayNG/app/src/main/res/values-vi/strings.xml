@@ -560,5 +560,58 @@
     <string name="tasker_blurb_stop">Dừng %1$s</string>
     <string name="connection_test_empty_message">không có thông tin chi tiết</string>
     <string name="value_unknown">không xác định</string>
+    <string name="aether_lab_protocol">Giao thức</string>
+    <string name="aether_lab_transport">Truyền tải</string>
+    <string name="aether_lab_scan_mode">Chế độ quét</string>
+    <string name="aether_lab_obfuscation">Làm rối</string>
+    <string name="aether_lab_ip_version">Phiên bản IP</string>
+    <string name="aether_lab_fragment">Phân mảnh ClientHello</string>
+    <string name="aether_lab_wiw_outer">Chặng ngoài</string>
+    <string name="aether_lab_wiw_inner">Chặng trong</string>
+    <string name="aether_hint_endpoint">Để trống để quét</string>
+    <string name="aether_action_scan">Tìm máy chủ</string>
+    <string name="aether_action_scanning">Đang quét…</string>
+    <string name="aether_scan_success">Đã tìm thấy máy chủ</string>
+    <string name="aether_scan_failed">Không tìm thấy máy chủ</string>
+    <string name="aether_invalid_endpoint">Nhập địa chỉ IP và cổng, hoặc để trống địa chỉ để quét</string>
+    <string name="aether_invalid_hop">Nhập địa chỉ và cổng, ví dụ 162.159.192.1:2408</string>
+    <string name="aether_same_hop">Hai chặng phải có địa chỉ khác nhau</string>
+    <string name="aether_unsupported_abi">Lõi Aether không khả dụng cho thiết bị này</string>
+    <string name="aether_core_stopped">Lõi Aether đã dừng chạy</string>
+    <string name="aether_core_connecting">Lõi Aether vẫn đang kết nối</string>
+    <string name="menu_item_import_config_manually_aether">Thêm cấu hình Aether thủ công</string>
+    <string name="aether_action_renew_key">Lấy khóa WARP mới</string>
+    <string name="aether_action_renewing_key">Đang lấy khóa mới…</string>
+    <string name="aether_confirm_renew_key">Khóa WARP hiện tại sẽ bị xóa và một khóa mới sẽ được đăng ký. Nếu đăng ký thất bại, khóa hiện tại sẽ được giữ lại.</string>
+    <string name="aether_log_title">Nhật ký</string>
+    <string name="aether_log_empty">Kết quả quét và trạng thái khóa WARP sẽ hiển thị ở đây</string>
+    <string name="aether_log_scan_started">Đang quét tìm máy chủ…</string>
+    <string name="aether_log_scan_found">Đã tìm thấy %1$s</string>
+    <string name="aether_log_scan_found_hops">Đã tìm thấy chặng ngoài %1$s và chặng trong %2$s</string>
+    <string name="aether_log_scan_cancelled">Đã hủy quét</string>
+    <string name="aether_log_key_renewing">Đang xóa khóa WARP cũ và đăng ký khóa mới…</string>
+    <string name="aether_log_key_renewed">Khóa WARP mới đã sẵn sàng và sẽ được dùng từ lần kết nối tiếp theo</string>
+    <string name="aether_log_key_renew_failed">Đăng ký khóa WARP mới thất bại; khóa cũ được giữ lại</string>
+    <string name="aether_log_masque_key_ready">Khóa MASQUE: thiết bị %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_masque_key_missing">Khóa MASQUE: chưa đăng ký; sẽ được đăng ký ở lần quét hoặc kết nối đầu tiên</string>
+    <string name="aether_log_wireguard_key_ready">Khóa WireGuard: thiết bị %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_wireguard_key_missing">Khóa WireGuard: chưa đăng ký; sẽ được đăng ký ở lần quét hoặc kết nối đầu tiên</string>
+    <string name="aether_log_outer_key_ready">Khóa chặng ngoài: thiết bị %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_outer_key_missing">Khóa chặng ngoài: chưa đăng ký; sẽ được đăng ký ở lần quét hoặc kết nối đầu tiên</string>
+    <string name="aether_log_inner_key_ready">Khóa chặng trong: thiết bị %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_inner_key_missing">Khóa chặng trong: chưa đăng ký; sẽ được đăng ký ở lần quét hoặc kết nối đầu tiên</string>
+    <string-array name="aether_scan_entries">
+        <item>Siêu tốc</item>
+        <item>Cân bằng</item>
+        <item>Kỹ lưỡng</item>
+        <item>Ẩn</item>
+        <item>Chắc chắn</item>
+    </string-array>
+    <string-array name="aether_obfuscation_entries">
+        <item>Tắt</item>
+        <item>Nhẹ</item>
+        <item>Cân bằng</item>
+        <item>Mạnh</item>
+    </string-array>
 
 </resources>

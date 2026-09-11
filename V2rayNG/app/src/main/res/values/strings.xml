@@ -562,5 +562,58 @@
     <string name="tasker_blurb_stop">Stop %1$s</string>
     <string name="connection_test_empty_message">no details available</string>
     <string name="value_unknown">unknown</string>
+    <string name="aether_lab_protocol">Protocol</string>
+    <string name="aether_lab_transport">Transport</string>
+    <string name="aether_lab_scan_mode">Scan mode</string>
+    <string name="aether_lab_obfuscation">Obfuscation</string>
+    <string name="aether_lab_ip_version">IP version</string>
+    <string name="aether_lab_fragment">Fragment ClientHello</string>
+    <string name="aether_lab_wiw_outer">Outer hop</string>
+    <string name="aether_lab_wiw_inner">Inner hop</string>
+    <string name="aether_hint_endpoint">Leave blank to scan</string>
+    <string name="aether_action_scan">Scan for an endpoint</string>
+    <string name="aether_action_scanning">Scanning…</string>
+    <string name="aether_scan_success">Endpoint found</string>
+    <string name="aether_scan_failed">No endpoint found</string>
+    <string name="aether_invalid_endpoint">Use an IP address and a port, or leave the address empty to scan</string>
+    <string name="aether_invalid_hop">Write an address and a port, such as 162.159.192.1:2408</string>
+    <string name="aether_same_hop">The two hops must be different addresses</string>
+    <string name="aether_unsupported_abi">The Aether core is not available for this device</string>
+    <string name="aether_core_stopped">The Aether core stopped running</string>
+    <string name="aether_core_connecting">The Aether core is still connecting</string>
+    <string name="menu_item_import_config_manually_aether">Add Aether config manually</string>
+    <string name="aether_action_renew_key">Get a new WARP key</string>
+    <string name="aether_action_renewing_key">Getting a new key…</string>
+    <string name="aether_confirm_renew_key">The current WARP key is removed and a new one is registered. If registering fails, the current key is kept.</string>
+    <string name="aether_log_title">Log</string>
+    <string name="aether_log_empty">Scan results and the WARP key status appear here</string>
+    <string name="aether_log_scan_started">Scanning for an endpoint…</string>
+    <string name="aether_log_scan_found">Found %1$s</string>
+    <string name="aether_log_scan_found_hops">Found outer hop %1$s and inner hop %2$s</string>
+    <string name="aether_log_scan_cancelled">Scan cancelled</string>
+    <string name="aether_log_key_renewing">Removing the old WARP key and registering a new one…</string>
+    <string name="aether_log_key_renewed">A new WARP key is ready and is used from the next connection</string>
+    <string name="aether_log_key_renew_failed">Registering a new WARP key failed; the previous key was kept</string>
+    <string name="aether_log_masque_key_ready">MASQUE key: device %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_masque_key_missing">MASQUE key: none yet; one is registered on the first scan or connection</string>
+    <string name="aether_log_wireguard_key_ready">WireGuard key: device %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_wireguard_key_missing">WireGuard key: none yet; one is registered on the first scan or connection</string>
+    <string name="aether_log_outer_key_ready">Outer hop key: device %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_outer_key_missing">Outer hop key: none yet; one is registered on the first scan or connection</string>
+    <string name="aether_log_inner_key_ready">Inner hop key: device %1$s, IPv4 %2$s, IPv6 %3$s</string>
+    <string name="aether_log_inner_key_missing">Inner hop key: none yet; one is registered on the first scan or connection</string>
+    <string-array name="aether_scan_entries">
+        <item>Turbo</item>
+        <item>Balanced</item>
+        <item>Thorough</item>
+        <item>Stealth</item>
+        <item>Ironclad</item>
+    </string-array>
+    <string-array name="aether_obfuscation_entries">
+        <item>Off</item>
+        <item>Light</item>
+        <item>Balanced</item>
+        <item>Aggressive</item>
+    </string-array>
 
 </resources>

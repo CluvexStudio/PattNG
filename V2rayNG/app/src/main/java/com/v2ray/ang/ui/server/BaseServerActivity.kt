@@ -380,7 +380,7 @@ abstract class BaseServerActivity : BaseComponentActivity() {
         }
     }
 
-    protected fun validateBasicConfig(state: ServerUiState): Boolean {
+    protected open fun validateBasicConfig(state: ServerUiState): Boolean {
         if (state.remarks.isBlank()) {
             toast(R.string.server_lab_remarks)
             return false

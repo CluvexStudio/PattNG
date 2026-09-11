@@ -12,12 +12,14 @@ import android.os.ParcelFileDescriptor
 import android.system.OsConstants
 import androidx.core.content.ContextCompat
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.R
 import com.v2ray.ang.contracts.IDialerService
 import com.v2ray.ang.contracts.ServiceControl
 import com.v2ray.ang.dto.ConnectionTestResult
 import com.v2ray.ang.dto.OutboundTrafficStat
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.enums.BrowserDialerMode
+import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
@@ -137,6 +139,12 @@ object CoreServiceManager {
             error(result.errorMessage.ifBlank { "Failed to get V2Ray config" })
         }
 
+        if (config.configType == EConfigType.AETHER) {
+            AetherCoreManager.start(service, config) { onAetherExit(guid) }
+        } else {
+            AetherCoreManager.stop()
+        }
+
         currentConfig = config
         var tunFd = vpnInterface?.fd ?: 0
         val dialerMode = BrowserDialerMode.from(config.browserDialerMode)
@@ -184,6 +192,20 @@ object CoreServiceManager {
         LogUtil.i(AppConfig.TAG, "StartCore-Manager: Core started successfully")
     }
 
+    private fun onAetherExit(guid: String) {
+        val control = serviceControl?.get() ?: return
+        val service = control.getService()
+        ContextCompat.getMainExecutor(service).execute {
+            if (AetherCoreManager.isRunning || !isRunning() || serviceControl?.get() !== control) return@execute
+            LogUtil.e(
+                AppConfig.TAG,
+                "StartCore-Manager: Aether core exited while running, stopping ${service.javaClass.simpleName}, guid=$guid"
+            )
+            MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_FAILURE, service.getString(R.string.aether_core_stopped))
+            control.stopService()
+        }
+    }
+
     /**
      * Stops the V2Ray core service.
      * Unregisters broadcast receivers, stops notifications, and shuts down plugins.
@@ -196,6 +218,7 @@ object CoreServiceManager {
         networkMonitor?.unregister()
         networkMonitor = null
         currentVpnInterface = null
+        AetherCoreManager.stop()
 
         if (isRunning()) {
             CoroutineScope(Dispatchers.IO).launch {
@@ -325,6 +348,15 @@ object CoreServiceManager {
 
         connectionTestScope.coroutineContext.cancelChildren()
         connectionTestScope.launch {
+            if (currentConfig?.configType == EConfigType.AETHER && !AetherCoreManager.isListening()) {
+                val reason = if (AetherCoreManager.isRunning) R.string.aether_core_connecting else R.string.aether_core_stopped
+                val stalled = ConnectionTestResult(delayMillis = -1L, errorMessage = service.getString(reason))
+                withContext(Dispatchers.Main.immediate) {
+                    MessageHelper.sendMsg2UI(service, AppConfig.MSG_MEASURE_DELAY_RESULT, stalled, requestId)
+                }
+                return@launch
+            }
+
             var time = -1L
             var errorStr = ""
 

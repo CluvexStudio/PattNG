@@ -32,6 +32,7 @@ object CoreOutboundBuilder {
             EConfigType.WIREGUARD -> toOutboundWireguard(profileItem)
             EConfigType.HYSTERIA2 -> toOutboundHysteria2(profileItem)
             EConfigType.HTTP -> toOutboundHttp(profileItem)
+            EConfigType.AETHER -> toOutboundAether()
             else -> null
         }
 
@@ -227,6 +228,17 @@ object CoreOutboundBuilder {
                 settings.user = profileItem.username.orEmpty()
                 settings.pass = profileItem.password.orEmpty()
             }
+        }
+
+        return outboundBean
+    }
+
+    private fun toOutboundAether(): OutboundBean? {
+        val outboundBean = createInitOutbound(EConfigType.SOCKS)
+
+        outboundBean?.settings?.let { settings ->
+            settings.address = AppConfig.LOOPBACK
+            settings.port = AetherCoreManager.socksPort
         }
 
         return outboundBean

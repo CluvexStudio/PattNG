@@ -560,5 +560,58 @@
     <string name="tasker_blurb_stop">停止 %1$s</string>
     <string name="connection_test_empty_message">无详细信息</string>
     <string name="value_unknown">未知</string>
+    <string name="aether_lab_protocol">协议</string>
+    <string name="aether_lab_transport">传输</string>
+    <string name="aether_lab_scan_mode">扫描模式</string>
+    <string name="aether_lab_obfuscation">混淆</string>
+    <string name="aether_lab_ip_version">IP 版本</string>
+    <string name="aether_lab_fragment">分片 ClientHello</string>
+    <string name="aether_lab_wiw_outer">外层节点</string>
+    <string name="aether_lab_wiw_inner">内层节点</string>
+    <string name="aether_hint_endpoint">留空则自动扫描</string>
+    <string name="aether_action_scan">扫描服务器</string>
+    <string name="aether_action_scanning">扫描中…</string>
+    <string name="aether_scan_success">已找到服务器</string>
+    <string name="aether_scan_failed">未找到服务器</string>
+    <string name="aether_invalid_endpoint">请填写 IP 地址和端口，或将地址留空以自动扫描</string>
+    <string name="aether_invalid_hop">请填写地址和端口，例如 162.159.192.1:2408</string>
+    <string name="aether_same_hop">两个节点的地址必须不同</string>
+    <string name="aether_unsupported_abi">此设备不支持 Aether 内核</string>
+    <string name="aether_core_stopped">Aether 内核已停止运行</string>
+    <string name="aether_core_connecting">Aether 内核仍在连接中</string>
+    <string name="menu_item_import_config_manually_aether">手动添加 Aether 配置</string>
+    <string name="aether_action_renew_key">获取新的 WARP 密钥</string>
+    <string name="aether_action_renewing_key">正在获取新密钥…</string>
+    <string name="aether_confirm_renew_key">将删除当前的 WARP 密钥并注册新密钥。如果注册失败，将保留当前密钥。</string>
+    <string name="aether_log_title">日志</string>
+    <string name="aether_log_empty">扫描结果和 WARP 密钥状态会显示在这里</string>
+    <string name="aether_log_scan_started">正在扫描服务器…</string>
+    <string name="aether_log_scan_found">已找到 %1$s</string>
+    <string name="aether_log_scan_found_hops">已找到外层节点 %1$s 和内层节点 %2$s</string>
+    <string name="aether_log_scan_cancelled">已取消扫描</string>
+    <string name="aether_log_key_renewing">正在删除旧的 WARP 密钥并注册新密钥…</string>
+    <string name="aether_log_key_renewed">新的 WARP 密钥已就绪，将在下次连接时使用</string>
+    <string name="aether_log_key_renew_failed">注册新的 WARP 密钥失败，已保留原密钥</string>
+    <string name="aether_log_masque_key_ready">MASQUE 密钥：设备 %1$s，IPv4 %2$s，IPv6 %3$s</string>
+    <string name="aether_log_masque_key_missing">MASQUE 密钥：尚未注册，将在首次扫描或连接时注册</string>
+    <string name="aether_log_wireguard_key_ready">WireGuard 密钥：设备 %1$s，IPv4 %2$s，IPv6 %3$s</string>
+    <string name="aether_log_wireguard_key_missing">WireGuard 密钥：尚未注册，将在首次扫描或连接时注册</string>
+    <string name="aether_log_outer_key_ready">外层节点密钥：设备 %1$s，IPv4 %2$s，IPv6 %3$s</string>
+    <string name="aether_log_outer_key_missing">外层节点密钥：尚未注册，将在首次扫描或连接时注册</string>
+    <string name="aether_log_inner_key_ready">内层节点密钥：设备 %1$s，IPv4 %2$s，IPv6 %3$s</string>
+    <string name="aether_log_inner_key_missing">内层节点密钥：尚未注册，将在首次扫描或连接时注册</string>
+    <string-array name="aether_scan_entries">
+        <item>极速</item>
+        <item>均衡</item>
+        <item>全面</item>
+        <item>隐蔽</item>
+        <item>可靠</item>
+    </string-array>
+    <string-array name="aether_obfuscation_entries">
+        <item>关闭</item>
+        <item>轻度</item>
+        <item>均衡</item>
+        <item>激进</item>
+    </string-array>
 
 </resources>

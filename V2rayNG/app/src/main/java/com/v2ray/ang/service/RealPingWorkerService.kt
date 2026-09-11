@@ -38,6 +38,8 @@ internal object RealPingExecutionLimiter {
     }
 }
 
+internal fun isBatchTestable(configType: EConfigType): Boolean = configType != EConfigType.AETHER
+
 /**
  * Worker that runs a batch of real-ping tests independently.
  * Each batch owns its own CoroutineScope/dispatcher and can be cancelled separately.
@@ -63,7 +65,7 @@ class RealPingWorkerService(
                 runningCount.incrementAndGet()
                 try {
                     val result = if (onlyTcp) startTcping(guid) else startRealPing(guid)
-                    if (scope.isActive) {
+                    if (result != null && scope.isActive) {
                         onEvent(RealPingEvent.Result(guid, result))
                     }
                 } catch (_: Throwable) {
@@ -104,10 +106,11 @@ class RealPingWorkerService(
         }
     }
 
-    private suspend fun startRealPing(guid: String): Long {
+    private suspend fun startRealPing(guid: String): Long? {
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
+        if (!isBatchTestable(config.configType)) return null
         if (!config.configType.isComplexType()
             && config.configType != EConfigType.HYSTERIA2
             && config.configType != EConfigType.WIREGUARD
@@ -132,10 +135,11 @@ class RealPingWorkerService(
         }
     }
 
-    private fun startTcping(guid: String): Long {
+    private fun startTcping(guid: String): Long? {
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
+        if (!isBatchTestable(config.configType)) return null
         if (!config.configType.isComplexType()
             && config.configType != EConfigType.HYSTERIA2
             && config.configType != EConfigType.WIREGUARD

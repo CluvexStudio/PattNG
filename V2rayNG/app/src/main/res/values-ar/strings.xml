@@ -570,5 +570,58 @@
     <string name="tasker_blurb_stop">إيقاف %1$s</string>
     <string name="connection_test_empty_message">لا تتوفر تفاصيل</string>
     <string name="value_unknown">غير معروف</string>
+    <string name="aether_lab_protocol">البروتوكول</string>
+    <string name="aether_lab_transport">الناقل</string>
+    <string name="aether_lab_scan_mode">وضع الفحص</string>
+    <string name="aether_lab_obfuscation">التمويه</string>
+    <string name="aether_lab_ip_version">إصدار IP</string>
+    <string name="aether_lab_fragment">تجزئة ClientHello</string>
+    <string name="aether_lab_wiw_outer">القفزة الخارجية</string>
+    <string name="aether_lab_wiw_inner">القفزة الداخلية</string>
+    <string name="aether_hint_endpoint">اتركه فارغًا للفحص</string>
+    <string name="aether_action_scan">ابحث عن خادم</string>
+    <string name="aether_action_scanning">جارٍ الفحص…</string>
+    <string name="aether_scan_success">تم العثور على خادم</string>
+    <string name="aether_scan_failed">لم يتم العثور على خادم</string>
+    <string name="aether_invalid_endpoint">استخدم عنوان IP ومنفذًا، أو اترك العنوان فارغًا للفحص</string>
+    <string name="aether_invalid_hop">اكتب العنوان والمنفذ معًا، مثل 162.159.192.1:2408</string>
+    <string name="aether_same_hop">يجب أن تكون القفزتان بعنوانين مختلفين</string>
+    <string name="aether_unsupported_abi">نواة Aether غير متوفرة لهذا الجهاز</string>
+    <string name="aether_core_stopped">توقفت نواة Aether عن العمل</string>
+    <string name="aether_core_connecting">لا تزال نواة Aether قيد الاتصال</string>
+    <string name="menu_item_import_config_manually_aether">إضافة إعداد Aether يدويًا</string>
+    <string name="aether_action_renew_key">الحصول على مفتاح WARP جديد</string>
+    <string name="aether_action_renewing_key">جارٍ الحصول على مفتاح جديد…</string>
+    <string name="aether_confirm_renew_key">سيتم حذف مفتاح WARP الحالي وتسجيل مفتاح جديد. إذا فشل التسجيل، يُحتفظ بالمفتاح الحالي.</string>
+    <string name="aether_log_title">السجل</string>
+    <string name="aether_log_empty">تظهر هنا نتائج الفحص وحالة مفتاح WARP</string>
+    <string name="aether_log_scan_started">جارٍ الفحص بحثًا عن خادم…</string>
+    <string name="aether_log_scan_found">تم العثور على %1$s</string>
+    <string name="aether_log_scan_found_hops">تم العثور على القفزة الخارجية %1$s والقفزة الداخلية %2$s</string>
+    <string name="aether_log_scan_cancelled">تم إلغاء الفحص</string>
+    <string name="aether_log_key_renewing">جارٍ حذف مفتاح WARP القديم وتسجيل مفتاح جديد…</string>
+    <string name="aether_log_key_renewed">مفتاح WARP الجديد جاهز وسيُستخدم من الاتصال التالي</string>
+    <string name="aether_log_key_renew_failed">فشل تسجيل مفتاح WARP جديد؛ تم الاحتفاظ بالمفتاح السابق</string>
+    <string name="aether_log_masque_key_ready">مفتاح MASQUE: الجهاز %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_masque_key_missing">مفتاح MASQUE: غير مسجل بعد؛ سيُسجل عند أول فحص أو اتصال</string>
+    <string name="aether_log_wireguard_key_ready">مفتاح WireGuard: الجهاز %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_wireguard_key_missing">مفتاح WireGuard: غير مسجل بعد؛ سيُسجل عند أول فحص أو اتصال</string>
+    <string name="aether_log_outer_key_ready">مفتاح القفزة الخارجية: الجهاز %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_outer_key_missing">مفتاح القفزة الخارجية: غير مسجل بعد؛ سيُسجل عند أول فحص أو اتصال</string>
+    <string name="aether_log_inner_key_ready">مفتاح القفزة الداخلية: الجهاز %1$s، IPv4 %2$s، IPv6 %3$s</string>
+    <string name="aether_log_inner_key_missing">مفتاح القفزة الداخلية: غير مسجل بعد؛ سيُسجل عند أول فحص أو اتصال</string>
+    <string-array name="aether_scan_entries">
+        <item>توربو</item>
+        <item>متوازن</item>
+        <item>شامل</item>
+        <item>خفي</item>
+        <item>مضمون</item>
+    </string-array>
+    <string-array name="aether_obfuscation_entries">
+        <item>إيقاف</item>
+        <item>خفيف</item>
+        <item>متوازن</item>
+        <item>قوي</item>
+    </string-array>
 
 </resources>
