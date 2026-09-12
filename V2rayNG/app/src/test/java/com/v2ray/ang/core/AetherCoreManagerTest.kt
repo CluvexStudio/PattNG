@@ -86,6 +86,26 @@ class AetherCoreManagerTest {
     }
 
     @Test
+    fun fragmentValuesReachTheCoreOnlyWhenFragmentingIsOn() {
+        val tuned = profile(transport = AetherTransport.HTTP2, fragment = true).apply {
+            aetherFragmentSize = "32-16"
+            aetherFragmentDelay = "5"
+        }
+        val arguments = AetherCoreManager.buildArguments(tuned, 10819)
+        assertEquals("16-32", valueAfter(arguments, "--fragment-size"))
+        assertEquals("5", valueAfter(arguments, "--fragment-delay"))
+
+        val off = AetherCoreManager.buildArguments(tuned.copy(aetherFragment = false), 10819)
+        assertFalse(off.contains("--fragment-size"))
+        assertFalse(off.contains("--fragment-delay"))
+
+        val invalid = AetherCoreManager.buildArguments(tuned.copy(aetherFragmentSize = "0", aetherFragmentDelay = "x"), 10819)
+        assertTrue(invalid.contains("--fragment"))
+        assertFalse(invalid.contains("--fragment-size"))
+        assertFalse(invalid.contains("--fragment-delay"))
+    }
+
+    @Test
     fun aPinnedEndpointIsForwardedInTheCoreFormat() {
         assertEquals(
             "162.159.198.1:443",

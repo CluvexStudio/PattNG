@@ -568,6 +568,10 @@
     <string name="aether_lab_obfuscation">Obfuscation</string>
     <string name="aether_lab_ip_version">IP version</string>
     <string name="aether_lab_fragment">Fragment ClientHello</string>
+    <string name="aether_lab_fragment_size">Fragment size (bytes)</string>
+    <string name="aether_lab_fragment_delay">Fragment delay (ms)</string>
+    <string name="aether_hint_fragment_size" translatable="false">16-32</string>
+    <string name="aether_hint_fragment_delay" translatable="false">2-10</string>
     <string name="aether_lab_wiw_outer">Outer hop</string>
     <string name="aether_lab_wiw_inner">Inner hop</string>
     <string name="aether_hint_endpoint">Leave blank to scan</string>
@@ -578,6 +582,7 @@
     <string name="aether_invalid_endpoint">Use an IP address and a port, or leave the address empty to scan</string>
     <string name="aether_invalid_hop">Write an address and a port, such as 162.159.192.1:2408</string>
     <string name="aether_same_hop">The two hops must be different addresses</string>
+    <string name="aether_invalid_fragment">Use a number or a range such as 16-32: size 1–4096 bytes, delay 0–1000 ms</string>
     <string name="aether_unsupported_abi">The Aether core is not available for this device</string>
     <string name="aether_core_stopped">The Aether core stopped running</string>
     <string name="aether_core_connecting">The Aether core is still connecting</string>

@@ -1,6 +1,7 @@
 package com.v2ray.ang.fmt
 
 import com.v2ray.ang.dto.AetherEndpoint
+import com.v2ray.ang.dto.AetherRange
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.enums.AetherIpVersion
 import com.v2ray.ang.enums.AetherObfuscation
@@ -14,10 +15,11 @@ import java.net.URI
 
 object AetherFmt : FmtBase() {
 
-    enum class EndpointProblem {
+    enum class Problem {
         INVALID_PEER,
         INVALID_HOP,
         SHARED_HOP,
+        INVALID_FRAGMENT,
     }
 
     fun parse(str: String): ProfileItem? {
@@ -34,6 +36,8 @@ object AetherFmt : FmtBase() {
         config.aetherObfuscation = AetherObfuscation.fromString(queryParam["noize"]).type
         config.aetherIpVersion = AetherIpVersion.fromString(queryParam["ip"]).type
         config.aetherFragment = queryParam["fragment"] == "1"
+        config.aetherFragmentSize = AetherRange.parse(queryParam["fragment_size"], AetherRange.FRAGMENT_SIZE)?.toString()
+        config.aetherFragmentDelay = AetherRange.parse(queryParam["fragment_delay"], AetherRange.FRAGMENT_DELAY)?.toString()
 
         if (protocol == AetherProtocol.GOOL) {
             val outer = AetherEndpoint.parse(queryParam["outer"])
@@ -59,7 +63,13 @@ object AetherFmt : FmtBase() {
         )
         if (protocol == AetherProtocol.MASQUE) {
             query["transport"] = AetherTransport.fromString(config.aetherTransport).type
-            if (config.aetherFragment == true) query["fragment"] = "1"
+            if (config.aetherFragment == true) {
+                query["fragment"] = "1"
+                AetherRange.parse(config.aetherFragmentSize, AetherRange.FRAGMENT_SIZE)
+                    ?.let { query["fragment_size"] = it.toString() }
+                AetherRange.parse(config.aetherFragmentDelay, AetherRange.FRAGMENT_DELAY)
+                    ?.let { query["fragment_delay"] = it.toString() }
+            }
         }
         if (protocol == AetherProtocol.GOOL) {
             AetherEndpoint.parse(config.aetherWiwOuter)?.let { query["outer"] = it.toString() }
@@ -71,17 +81,36 @@ object AetherFmt : FmtBase() {
         return "${endpoint ?: ""}?$queryText#${Utils.encodeURIComponent(config.remarks)}"
     }
 
-    fun normalizeEndpoints(config: ProfileItem): EndpointProblem? {
+    fun normalize(config: ProfileItem): Problem? =
+        normalizeFragment(config) ?: normalizeEndpoints(config)
+
+    private fun normalizeFragment(config: ProfileItem): Problem? {
+        val inUse = AetherProtocol.fromString(config.aetherProtocol) == AetherProtocol.MASQUE &&
+            AetherTransport.fromString(config.aetherTransport) == AetherTransport.HTTP2 &&
+            config.aetherFragment == true
+        val sizeText = config.aetherFragmentSize?.trim().orEmpty()
+        val delayText = config.aetherFragmentDelay?.trim().orEmpty()
+        val size = AetherRange.parse(sizeText, AetherRange.FRAGMENT_SIZE)
+        val delay = AetherRange.parse(delayText, AetherRange.FRAGMENT_DELAY)
+        if (inUse && (sizeText.isNotEmpty() && size == null || delayText.isNotEmpty() && delay == null)) {
+            return Problem.INVALID_FRAGMENT
+        }
+        config.aetherFragmentSize = size?.toString()
+        config.aetherFragmentDelay = delay?.toString()
+        return null
+    }
+
+    private fun normalizeEndpoints(config: ProfileItem): Problem? {
         if (AetherProtocol.fromString(config.aetherProtocol) == AetherProtocol.GOOL) {
             val outerText = config.aetherWiwOuter?.trim().orEmpty()
             val innerText = config.aetherWiwInner?.trim().orEmpty()
             val outer = AetherEndpoint.parse(outerText)
             val inner = AetherEndpoint.parse(innerText)
             if (outerText.isNotEmpty() && outer == null || innerText.isNotEmpty() && inner == null) {
-                return EndpointProblem.INVALID_HOP
+                return Problem.INVALID_HOP
             }
             if (outer != null && inner != null && outer.host == inner.host) {
-                return EndpointProblem.SHARED_HOP
+                return Problem.SHARED_HOP
             }
             config.aetherWiwOuter = outer?.toString()
             config.aetherWiwInner = inner?.toString()
@@ -93,7 +122,7 @@ object AetherFmt : FmtBase() {
         val address = config.server?.trim().orEmpty()
         val endpoint = AetherEndpoint.of(address, config.serverPort)
         if (address.isNotEmpty() && endpoint == null) {
-            return EndpointProblem.INVALID_PEER
+            return Problem.INVALID_PEER
         }
         config.server = endpoint?.host
         config.serverPort = endpoint?.port?.toString()

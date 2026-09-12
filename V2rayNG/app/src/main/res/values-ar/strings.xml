@@ -576,6 +576,8 @@
     <string name="aether_lab_obfuscation">التمويه</string>
     <string name="aether_lab_ip_version">إصدار IP</string>
     <string name="aether_lab_fragment">تجزئة ClientHello</string>
+    <string name="aether_lab_fragment_size">حجم الأجزاء (بايت)</string>
+    <string name="aether_lab_fragment_delay">التأخير بين الأجزاء (مللي ثانية)</string>
     <string name="aether_lab_wiw_outer">القفزة الخارجية</string>
     <string name="aether_lab_wiw_inner">القفزة الداخلية</string>
     <string name="aether_hint_endpoint">اتركه فارغًا للفحص</string>
@@ -586,6 +588,7 @@
     <string name="aether_invalid_endpoint">استخدم عنوان IP ومنفذًا، أو اترك العنوان فارغًا للفحص</string>
     <string name="aether_invalid_hop">اكتب العنوان والمنفذ معًا، مثل 162.159.192.1:2408</string>
     <string name="aether_same_hop">يجب أن تكون القفزتان بعنوانين مختلفين</string>
+    <string name="aether_invalid_fragment">اكتب رقمًا أو نطاقًا مثل 16-32: الحجم من 1 إلى 4096 بايت، والتأخير من 0 إلى 1000 مللي ثانية</string>
     <string name="aether_unsupported_abi">نواة Aether غير متوفرة لهذا الجهاز</string>
     <string name="aether_core_stopped">توقفت نواة Aether عن العمل</string>
     <string name="aether_core_connecting">لا تزال نواة Aether قيد الاتصال</string>

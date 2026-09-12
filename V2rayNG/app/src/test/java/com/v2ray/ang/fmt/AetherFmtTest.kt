@@ -58,6 +58,46 @@ class AetherFmtTest {
     }
 
     @Test
+    fun fragmentValuesSurviveTheRoundTrip() {
+        val uri = link(profile {
+            aetherTransport = AetherTransport.HTTP2.type
+            aetherFragment = true
+            aetherFragmentSize = "16-32"
+            aetherFragmentDelay = "5"
+        })
+
+        val parsed = AetherFmt.parse(uri)
+        assertEquals("16-32", parsed?.aetherFragmentSize)
+        assertEquals("5", parsed?.aetherFragmentDelay)
+
+        val broken = AetherFmt.parse("aether://?protocol=masque&transport=h2&fragment=1&fragment_size=0&fragment_delay=x#X")
+        assertNull(broken?.aetherFragmentSize)
+        assertNull(broken?.aetherFragmentDelay)
+    }
+
+    @Test
+    fun fragmentValuesAreCheckedOnlyWhenTheyAreUsed() {
+        val used = profile {
+            aetherTransport = AetherTransport.HTTP2.type
+            aetherFragment = true
+            aetherFragmentSize = "32 - 16"
+            aetherFragmentDelay = ""
+        }
+        assertNull(AetherFmt.normalize(used))
+        assertEquals("16-32", used.aetherFragmentSize)
+        assertNull(used.aetherFragmentDelay)
+
+        assertEquals(
+            AetherFmt.Problem.INVALID_FRAGMENT,
+            AetherFmt.normalize(used.copy(aetherFragmentDelay = "5000"))
+        )
+
+        val unused = used.copy(aetherTransport = AetherTransport.HTTP3.type, aetherFragmentDelay = "5000")
+        assertNull(AetherFmt.normalize(unused))
+        assertNull(unused.aetherFragmentDelay)
+    }
+
+    @Test
     fun bothGoolHopsSurviveTheRoundTrip() {
         val original = profile {
             remarks = "Gool"
@@ -199,7 +239,7 @@ class AetherFmtTest {
             aetherWiwOuter = "162.159.192.1:2408"
         }
 
-        assertNull(AetherFmt.normalizeEndpoints(config))
+        assertNull(AetherFmt.normalize(config))
         assertNull(config.server)
         assertNull(config.serverPort)
         assertNull(config.aetherWiwOuter)
@@ -212,7 +252,7 @@ class AetherFmtTest {
             serverPort = " 0443 "
         }
 
-        assertNull(AetherFmt.normalizeEndpoints(config))
+        assertNull(AetherFmt.normalize(config))
         assertEquals("2606:4700::1", config.server)
         assertEquals("443", config.serverPort)
     }
@@ -220,16 +260,16 @@ class AetherFmtTest {
     @Test
     fun aPinnedEndpointTheCoreCannotUseIsRejected() {
         assertEquals(
-            AetherFmt.EndpointProblem.INVALID_PEER,
-            AetherFmt.normalizeEndpoints(profile { server = "engage.cloudflareclient.com"; serverPort = "2408" })
+            AetherFmt.Problem.INVALID_PEER,
+            AetherFmt.normalize(profile { server = "engage.cloudflareclient.com"; serverPort = "2408" })
         )
         assertEquals(
-            AetherFmt.EndpointProblem.INVALID_PEER,
-            AetherFmt.normalizeEndpoints(profile { server = "162.159.198.1"; serverPort = "" })
+            AetherFmt.Problem.INVALID_PEER,
+            AetherFmt.normalize(profile { server = "162.159.198.1"; serverPort = "" })
         )
         assertEquals(
-            AetherFmt.EndpointProblem.INVALID_PEER,
-            AetherFmt.normalizeEndpoints(profile { server = "162.159.198.1"; serverPort = "70000" })
+            AetherFmt.Problem.INVALID_PEER,
+            AetherFmt.normalize(profile { server = "162.159.198.1"; serverPort = "70000" })
         )
     }
 
@@ -243,7 +283,7 @@ class AetherFmtTest {
             aetherWiwInner = ""
         }
 
-        assertNull(AetherFmt.normalizeEndpoints(config))
+        assertNull(AetherFmt.normalize(config))
         assertEquals("162.159.192.1:2408", config.aetherWiwOuter)
         assertNull(config.aetherWiwInner)
         assertNull(config.server)
@@ -253,12 +293,12 @@ class AetherFmtTest {
     @Test
     fun aGoolHopTheCoreCannotUseIsRejected() {
         assertEquals(
-            AetherFmt.EndpointProblem.INVALID_HOP,
-            AetherFmt.normalizeEndpoints(profile { aetherProtocol = AetherProtocol.GOOL.type; aetherWiwOuter = "162.159.192.1" })
+            AetherFmt.Problem.INVALID_HOP,
+            AetherFmt.normalize(profile { aetherProtocol = AetherProtocol.GOOL.type; aetherWiwOuter = "162.159.192.1" })
         )
         assertEquals(
-            AetherFmt.EndpointProblem.INVALID_HOP,
-            AetherFmt.normalizeEndpoints(profile { aetherProtocol = AetherProtocol.GOOL.type; aetherWiwInner = "2606:4700::1:894" })
+            AetherFmt.Problem.INVALID_HOP,
+            AetherFmt.normalize(profile { aetherProtocol = AetherProtocol.GOOL.type; aetherWiwInner = "2606:4700::1:894" })
         )
     }
 
@@ -270,7 +310,7 @@ class AetherFmtTest {
             aetherWiwInner = "162.159.192.1:894"
         }
 
-        assertEquals(AetherFmt.EndpointProblem.SHARED_HOP, AetherFmt.normalizeEndpoints(config))
+        assertEquals(AetherFmt.Problem.SHARED_HOP, AetherFmt.normalize(config))
         assertEquals("162.159.192.1:2408", config.aetherWiwOuter)
         assertEquals("162.159.192.1:894", config.aetherWiwInner)
     }

@@ -141,6 +141,20 @@ class ServerAetherActivity : BaseServerActivity() {
                     checked = uiState.aetherFragment,
                     onCheckedChange = { uiState.aetherFragment = it }
                 )
+                if (uiState.aetherFragment) {
+                    FormTextField(
+                        stringResource(R.string.aether_lab_fragment_size),
+                        uiState.aetherFragmentSize,
+                        { uiState.aetherFragmentSize = it },
+                        placeholder = stringResource(R.string.aether_hint_fragment_size)
+                    )
+                    FormTextField(
+                        stringResource(R.string.aether_lab_fragment_delay),
+                        uiState.aetherFragmentDelay,
+                        { uiState.aetherFragmentDelay = it },
+                        placeholder = stringResource(R.string.aether_hint_fragment_delay)
+                    )
+                }
             }
             AetherDropdownField(
                 label = R.string.aether_lab_scan_mode,
@@ -255,12 +269,13 @@ class ServerAetherActivity : BaseServerActivity() {
     }
 
     override fun validateProtocolConfig(config: ProfileItem): Boolean {
-        val problem = AetherFmt.normalizeEndpoints(config) ?: return true
+        val problem = AetherFmt.normalize(config) ?: return true
         toast(
             when (problem) {
-                AetherFmt.EndpointProblem.INVALID_PEER -> R.string.aether_invalid_endpoint
-                AetherFmt.EndpointProblem.INVALID_HOP -> R.string.aether_invalid_hop
-                AetherFmt.EndpointProblem.SHARED_HOP -> R.string.aether_same_hop
+                AetherFmt.Problem.INVALID_PEER -> R.string.aether_invalid_endpoint
+                AetherFmt.Problem.INVALID_HOP -> R.string.aether_invalid_hop
+                AetherFmt.Problem.SHARED_HOP -> R.string.aether_same_hop
+                AetherFmt.Problem.INVALID_FRAGMENT -> R.string.aether_invalid_fragment
             }
         )
         return false

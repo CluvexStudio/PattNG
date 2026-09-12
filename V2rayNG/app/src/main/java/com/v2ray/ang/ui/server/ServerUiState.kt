@@ -76,7 +76,9 @@ class ServerUiState(
     aetherIpVersion: String = AetherIpVersion.V4.type,
     aetherWiwOuter: String = "",
     aetherWiwInner: String = "",
-    aetherFragment: Boolean = false
+    aetherFragment: Boolean = false,
+    aetherFragmentSize: String = "",
+    aetherFragmentDelay: String = ""
 ) {
     var configType by mutableStateOf(configType)
     var remarks by mutableStateOf(remarks)
@@ -135,6 +137,8 @@ class ServerUiState(
     var aetherWiwOuter by mutableStateOf(aetherWiwOuter)
     var aetherWiwInner by mutableStateOf(aetherWiwInner)
     var aetherFragment by mutableStateOf(aetherFragment)
+    var aetherFragmentSize by mutableStateOf(aetherFragmentSize)
+    var aetherFragmentDelay by mutableStateOf(aetherFragmentDelay)
 
     fun toProfileItem(initialConfig: ProfileItem): ProfileItem {
         val isVmess = configType == EConfigType.VMESS
@@ -211,7 +215,9 @@ class ServerUiState(
             aetherIpVersion = if (isAether) aetherIpVersion else null,
             aetherWiwOuter = if (isAether) aetherWiwOuter.nullIfBlank() else null,
             aetherWiwInner = if (isAether) aetherWiwInner.nullIfBlank() else null,
-            aetherFragment = if (isAether) aetherFragment else null
+            aetherFragment = if (isAether) aetherFragment else null,
+            aetherFragmentSize = if (isAether) aetherFragmentSize.nullIfBlank() else null,
+            aetherFragmentDelay = if (isAether) aetherFragmentDelay.nullIfBlank() else null
         )
     }
 
@@ -276,7 +282,9 @@ class ServerUiState(
                 aetherIpVersion = initialConfig.aetherIpVersion ?: AetherIpVersion.V4.type,
                 aetherWiwOuter = initialConfig.aetherWiwOuter ?: "",
                 aetherWiwInner = initialConfig.aetherWiwInner ?: "",
-                aetherFragment = initialConfig.aetherFragment ?: false
+                aetherFragment = initialConfig.aetherFragment ?: false,
+                aetherFragmentSize = initialConfig.aetherFragmentSize ?: "",
+                aetherFragmentDelay = initialConfig.aetherFragmentDelay ?: ""
             )
 
         fun from(

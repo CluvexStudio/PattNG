@@ -568,6 +568,8 @@
     <string name="aether_lab_obfuscation">অবফাসকেশন</string>
     <string name="aether_lab_ip_version">IP সংস্করণ</string>
     <string name="aether_lab_fragment">ClientHello ভাগ করুন</string>
+    <string name="aether_lab_fragment_size">খণ্ডের আকার (বাইট)</string>
+    <string name="aether_lab_fragment_delay">খণ্ডের মাঝে বিলম্ব (মিলিসেকেন্ড)</string>
     <string name="aether_lab_wiw_outer">বাইরের হপ</string>
     <string name="aether_lab_wiw_inner">ভিতরের হপ</string>
     <string name="aether_hint_endpoint">স্ক্যান করতে খালি রাখুন</string>
@@ -578,6 +580,7 @@
     <string name="aether_invalid_endpoint">একটি IP ঠিকানা ও পোর্ট দিন, অথবা স্ক্যান করতে ঠিকানা খালি রাখুন</string>
     <string name="aether_invalid_hop">ঠিকানা ও পোর্ট একসাথে লিখুন, যেমন 162.159.192.1:2408</string>
     <string name="aether_same_hop">দুটি হপের ঠিকানা আলাদা হতে হবে</string>
+    <string name="aether_invalid_fragment">একটি সংখ্যা বা 16-32 এর মতো পরিসর লিখুন: আকার 1–4096 বাইট, বিলম্ব 0–1000 মিলিসেকেন্ড</string>
     <string name="aether_unsupported_abi">এই ডিভাইসের জন্য Aether কোর উপলব্ধ নয়</string>
     <string name="aether_core_stopped">Aether কোর চলা বন্ধ হয়ে গেছে</string>
     <string name="aether_core_connecting">Aether কোর এখনও সংযোগ করছে</string>

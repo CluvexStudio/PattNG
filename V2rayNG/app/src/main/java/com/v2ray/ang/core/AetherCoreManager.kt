@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.AetherEndpoint
+import com.v2ray.ang.dto.AetherRange
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.enums.AetherIpVersion
 import com.v2ray.ang.enums.AetherObfuscation
@@ -63,7 +64,13 @@ object AetherCoreManager {
                 AetherTransport.fromString(profile.aetherTransport) == AetherTransport.HTTP2
             ) {
                 add("--h2")
-                if (profile.aetherFragment == true) add("--fragment")
+                if (profile.aetherFragment == true) {
+                    add("--fragment")
+                    AetherRange.parse(profile.aetherFragmentSize, AetherRange.FRAGMENT_SIZE)
+                        ?.let { addAll(listOf("--fragment-size", it.toString())) }
+                    AetherRange.parse(profile.aetherFragmentDelay, AetherRange.FRAGMENT_DELAY)
+                        ?.let { addAll(listOf("--fragment-delay", it.toString())) }
+                }
             }
 
             if (protocol == AetherProtocol.GOOL) {

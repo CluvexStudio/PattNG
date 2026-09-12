@@ -566,6 +566,8 @@
     <string name="aether_lab_obfuscation">Làm rối</string>
     <string name="aether_lab_ip_version">Phiên bản IP</string>
     <string name="aether_lab_fragment">Phân mảnh ClientHello</string>
+    <string name="aether_lab_fragment_size">Kích thước mảnh (byte)</string>
+    <string name="aether_lab_fragment_delay">Độ trễ giữa các mảnh (ms)</string>
     <string name="aether_lab_wiw_outer">Chặng ngoài</string>
     <string name="aether_lab_wiw_inner">Chặng trong</string>
     <string name="aether_hint_endpoint">Để trống để quét</string>
@@ -576,6 +578,7 @@
     <string name="aether_invalid_endpoint">Nhập địa chỉ IP và cổng, hoặc để trống địa chỉ để quét</string>
     <string name="aether_invalid_hop">Nhập địa chỉ và cổng, ví dụ 162.159.192.1:2408</string>
     <string name="aether_same_hop">Hai chặng phải có địa chỉ khác nhau</string>
+    <string name="aether_invalid_fragment">Nhập một số hoặc khoảng như 16-32: kích thước 1–4096 byte, độ trễ 0–1000 ms</string>
     <string name="aether_unsupported_abi">Lõi Aether không khả dụng cho thiết bị này</string>
     <string name="aether_core_stopped">Lõi Aether đã dừng chạy</string>
     <string name="aether_core_connecting">Lõi Aether vẫn đang kết nối</string>

@@ -85,6 +85,8 @@ data class ProfileItem(
     var aetherWiwOuter: String? = null,
     var aetherWiwInner: String? = null,
     var aetherFragment: Boolean? = null,
+    var aetherFragmentSize: String? = null,
+    var aetherFragmentDelay: String? = null,
 ) {
 
     companion object {

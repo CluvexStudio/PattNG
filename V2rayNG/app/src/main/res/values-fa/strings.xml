@@ -568,6 +568,8 @@
     <string name="aether_lab_obfuscation">مبهم‌سازی</string>
     <string name="aether_lab_ip_version">نسخه IP</string>
     <string name="aether_lab_fragment">تکه‌تکه کردن ClientHello</string>
+    <string name="aether_lab_fragment_size">اندازه تکه‌ها (بایت)</string>
+    <string name="aether_lab_fragment_delay">تأخیر بین تکه‌ها (میلی‌ثانیه)</string>
     <string name="aether_lab_wiw_outer">مسیر بیرونی</string>
     <string name="aether_lab_wiw_inner">مسیر درونی</string>
     <string name="aether_hint_endpoint">خالی بگذارید تا اسکن شود</string>
@@ -578,6 +580,7 @@
     <string name="aether_invalid_endpoint">یک نشانی IP و پورت وارد کنید، یا نشانی را خالی بگذارید تا اسکن شود</string>
     <string name="aether_invalid_hop">نشانی و پورت را با هم بنویسید، مثل 162.159.192.1:2408</string>
     <string name="aether_same_hop">دو مسیر باید نشانی متفاوت داشته باشند</string>
+    <string name="aether_invalid_fragment">یک عدد یا بازه مثل 16-32 بنویسید: اندازه 1 تا 4096 بایت، تأخیر 0 تا 1000 میلی‌ثانیه</string>
     <string name="aether_unsupported_abi">هسته Aether برای این دستگاه در دسترس نیست</string>
     <string name="aether_core_stopped">هسته Aether متوقف شده است</string>
     <string name="aether_core_connecting">هسته Aether هنوز در حال اتصال است</string>
