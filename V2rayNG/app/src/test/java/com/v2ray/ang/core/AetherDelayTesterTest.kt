@@ -61,6 +61,38 @@ class AetherDelayTesterTest {
     }
 
     @Test
+    fun aTcpPingProbesThePinnedEdgeInsteadOfOpeningATunnel() {
+        val probed = mutableListOf<Pair<String, Int>>()
+        val connect = { host: String, port: Int -> probed.add(host to port); 42L }
+
+        val pinned = aether(AetherProtocol.MASQUE).apply { server = "162.159.198.1"; serverPort = "2408" }
+        assertEquals(42L, AetherDelayTester.reachability(pinned, connect))
+        assertEquals(listOf("162.159.198.1" to 443), probed)
+
+        probed.clear()
+        val hops = aether(AetherProtocol.GOOL).apply { aetherWiwOuter = "162.159.192.1:2408"; aetherWiwInner = "188.114.96.1:894" }
+        assertEquals(42L, AetherDelayTester.reachability(hops, connect))
+        assertEquals(listOf("162.159.192.1" to 443), probed)
+
+        probed.clear()
+        val unreachable = { _: String, _: Int -> -1L }
+        assertEquals(-1L, AetherDelayTester.reachability(pinned, unreachable))
+    }
+
+    @Test
+    fun aProfileLeftToTheScannerHasNothingToProbe() {
+        val probes = { _: String, _: Int -> throw AssertionError("must not probe") }
+
+        assertEquals(AetherDelayTester.UNTESTED, AetherDelayTester.reachability(aether(AetherProtocol.MASQUE), probes))
+        assertEquals(AetherDelayTester.UNTESTED, AetherDelayTester.reachability(aether(AetherProtocol.GOOL), probes))
+        val halfPinned = aether(AetherProtocol.WIREGUARD).apply { server = "162.159.198.1" }
+        assertEquals(AetherDelayTester.UNTESTED, AetherDelayTester.reachability(halfPinned, probes))
+        val hostName = aether(AetherProtocol.WIREGUARD).apply { server = "engage.cloudflareclient.com"; serverPort = "2408" }
+        assertEquals(AetherDelayTester.UNTESTED, AetherDelayTester.reachability(hostName, probes))
+        assertEquals(0L, AetherDelayTester.UNTESTED)
+    }
+
+    @Test
     fun aDelayIsMeasuredThroughTheSocksPort() {
         HttpStub("204 No Content").use { http ->
             SocksStub().use { socks ->

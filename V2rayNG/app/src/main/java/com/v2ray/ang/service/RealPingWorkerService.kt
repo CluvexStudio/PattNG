@@ -64,7 +64,7 @@ class RealPingWorkerService(
                 runningCount.incrementAndGet()
                 try {
                     val result = if (onlyTcp) startTcping(guid) else startRealPing(guid)
-                    if (result != null && scope.isActive) {
+                    if (scope.isActive) {
                         onEvent(RealPingEvent.Result(guid, result))
                     }
                 } catch (_: Throwable) {
@@ -105,7 +105,7 @@ class RealPingWorkerService(
         }
     }
 
-    private suspend fun startRealPing(guid: String): Long? {
+    private suspend fun startRealPing(guid: String): Long {
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
@@ -136,12 +136,12 @@ class RealPingWorkerService(
         }
     }
 
-    private suspend fun startTcping(guid: String): Long? {
+    private fun startTcping(guid: String): Long {
         val retFailure = -1L
 
         val config = MmkvManager.decodeServerConfig(guid) ?: return retFailure
         if (config.configType == EConfigType.AETHER) {
-            return AetherDelayTester.measure(context, guid, config, SettingsManager.getDelayTestUrl())
+            return AetherDelayTester.reachability(config)
         }
         if (!config.configType.isComplexType()
             && config.configType != EConfigType.HYSTERIA2

@@ -2,10 +2,12 @@ package com.v2ray.ang.core
 
 import android.content.Context
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.dto.AetherEndpoint
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.enums.AetherProtocol
 import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.handler.MmkvManager
+import com.v2ray.ang.handler.SpeedtestManager
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +31,13 @@ object AetherDelayTester {
     private const val POLL_INTERVAL_MS = 250L
     private const val ATTEMPTS = 2
 
+    /** Port every Cloudflare edge answers on TCP, whatever port the tunnel itself uses. */
+    private const val EDGE_TCP_PORT = 443
+    private const val REACH_TIMEOUT_MS = 1000
+
+    /** Stored for "no result": the server row shows nothing instead of a stale or a failed number. */
+    const val UNTESTED = 0L
+
     private val tunnels = Mutex()
 
     internal enum class Route {
@@ -37,16 +46,40 @@ object AetherDelayTester {
         SKIP,
     }
 
-    suspend fun measure(context: Context, guid: String, profile: ProfileItem, url: String): Long? {
+    suspend fun measure(context: Context, guid: String, profile: ProfileItem, url: String): Long {
         val activeGuid = MmkvManager.getSelectServer()
         val active = activeGuid?.let(MmkvManager::decodeServerConfig)
         val sessionUp = withContext(Dispatchers.IO) { AetherCoreManager.acceptsConnections(AetherCoreManager.socksPort) }
         return when (route(guid, profile, activeGuid, active, sessionUp)) {
             Route.ACTIVE_SESSION -> withContext(Dispatchers.IO) { requestDelay(AetherCoreManager.socksPort, url) }
             Route.NEW_TUNNEL -> tunnels.withLock { throughNewTunnel(context, guid, profile, url) }
-            Route.SKIP -> null
+            Route.SKIP -> {
+                // A second tunnel on the connected profile's key would disturb the live session.
+                LogUtil.i(AppConfig.TAG, "AetherTest: left untested, it shares the connected profile's key, guid=$guid")
+                UNTESTED
+            }
         }
     }
+
+    /**
+     * The cheap probe behind "TCP ping": a TCP connect to the pinned edge address instead of a
+     * full tunnel. It tells whether that edge is reachable, not whether the tunnel works, and a
+     * profile left to the scanner has nothing to probe.
+     */
+    fun reachability(
+        profile: ProfileItem,
+        connect: (host: String, port: Int) -> Long = { host, port -> SpeedtestManager.socketConnectTime(host, port, REACH_TIMEOUT_MS) },
+    ): Long {
+        val host = probeHost(profile) ?: return UNTESTED
+        return connect(host, EDGE_TCP_PORT)
+    }
+
+    internal fun probeHost(profile: ProfileItem): String? =
+        if (AetherProtocol.fromString(profile.aetherProtocol) == AetherProtocol.GOOL) {
+            AetherEndpoint.parse(profile.aetherWiwOuter)?.host
+        } else {
+            AetherEndpoint.of(profile.server, profile.serverPort)?.host
+        }
 
     internal fun route(
         guid: String,
