@@ -21,7 +21,10 @@ if [[ ! -f "$CORE_DIR/Cargo.toml" ]]; then
   exit 1
 fi
 
-ABIS="armeabi-v7a arm64-v8a x86 x86_64"
+# 32-bit x86 is left out on purpose: aether's own release builds do not cover
+# i686-linux-android, so that target is unverified. The app hides the Aether
+# feature on an ABI that ships without the binary.
+ABIS="armeabi-v7a arm64-v8a x86_64"
 API_LEVEL=24
 
 triple_for () {
