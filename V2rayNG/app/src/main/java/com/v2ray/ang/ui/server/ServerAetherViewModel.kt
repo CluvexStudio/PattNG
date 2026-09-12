@@ -52,6 +52,10 @@ class ServerAetherViewModel(
     private val _isRenewingIdentity = MutableStateFlow(false)
     val isRenewingIdentity: StateFlow<Boolean> = _isRenewingIdentity.asStateFlow()
 
+    /** True while the daemon runs an Aether tunnel; the shared WARP key must not change under it. */
+    private val _isSessionActive = MutableStateFlow(false)
+    val isSessionActive: StateFlow<Boolean> = _isSessionActive.asStateFlow()
+
     private val _log = MutableStateFlow<List<AetherLogEntry>>(emptyList())
     val log: StateFlow<List<AetherLogEntry>> = _log.asStateFlow()
 
@@ -64,6 +68,11 @@ class ServerAetherViewModel(
 
     init {
         viewModelScope.launch { _isCoreAvailable.value = source.isCoreAvailable() }
+        refreshSession()
+    }
+
+    fun refreshSession() {
+        viewModelScope.launch { _isSessionActive.value = source.isSessionActive() }
     }
 
     fun scan(profile: ProfileItem) {
@@ -98,9 +107,15 @@ class ServerAetherViewModel(
     fun renewIdentity(profile: ProfileItem) {
         if (isBusy) return
         _isRenewingIdentity.value = true
-        append(Log.INFO, AetherLogText.Resource(R.string.aether_log_key_renewing))
         viewModelScope.launch {
             try {
+                // Checked again at the tap, the session may have come up after the screen opened.
+                if (source.isSessionActive()) {
+                    _isSessionActive.value = true
+                    append(Log.WARN, AetherLogText.Resource(R.string.aether_renew_blocked))
+                    return@launch
+                }
+                append(Log.INFO, AetherLogText.Resource(R.string.aether_log_key_renewing))
                 val status = source.renewIdentity(profile, ::appendOutput)
                 if (status == null) {
                     append(Log.ERROR, AetherLogText.Resource(R.string.aether_log_key_renew_failed))

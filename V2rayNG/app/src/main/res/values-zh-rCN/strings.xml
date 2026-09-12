@@ -603,6 +603,9 @@
     <string name="aether_log_outer_key_missing">外层节点密钥：尚未注册，将在首次扫描或连接时注册</string>
     <string name="aether_log_inner_key_ready">内层节点密钥：设备 %1$s，IPv4 %2$s，IPv6 %3$s</string>
     <string name="aether_log_inner_key_missing">内层节点密钥：尚未注册，将在首次扫描或连接时注册</string>
+    <string name="aether_renew_blocked">请先断开 Aether 连接，再获取新的 WARP 密钥；当前连接正在使用现有密钥</string>
+    <string name="title_aether_core">Aether 内核</string>
+    <string name="summary_aether_core">由 CluvexStudio 开发的 WARP 客户端，以 AGPL-3.0 许可证随应用分发。点按查看源代码。</string>
     <string-array name="aether_scan_entries">
         <item>极速</item>
         <item>均衡</item>

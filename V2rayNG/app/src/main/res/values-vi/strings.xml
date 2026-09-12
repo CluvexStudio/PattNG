@@ -603,6 +603,9 @@
     <string name="aether_log_outer_key_missing">Khóa chặng ngoài: chưa đăng ký; sẽ được đăng ký ở lần quét hoặc kết nối đầu tiên</string>
     <string name="aether_log_inner_key_ready">Khóa chặng trong: thiết bị %1$s, IPv4 %2$s, IPv6 %3$s</string>
     <string name="aether_log_inner_key_missing">Khóa chặng trong: chưa đăng ký; sẽ được đăng ký ở lần quét hoặc kết nối đầu tiên</string>
+    <string name="aether_renew_blocked">Hãy ngắt kết nối Aether trước khi lấy khóa WARP mới; kết nối hiện tại đang dùng khóa này</string>
+    <string name="title_aether_core">Lõi Aether</string>
+    <string name="summary_aether_core">Trình khách WARP của CluvexStudio, đi kèm theo giấy phép AGPL-3.0. Nhấn để mở mã nguồn.</string>
     <string-array name="aether_scan_entries">
         <item>Siêu tốc</item>
         <item>Cân bằng</item>

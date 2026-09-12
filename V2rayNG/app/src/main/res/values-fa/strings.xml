@@ -605,6 +605,9 @@
     <string name="aether_log_outer_key_missing">کلید مسیر بیرونی: هنوز ثبت نشده؛ در اولین اسکن یا اتصال ثبت می‌شود</string>
     <string name="aether_log_inner_key_ready">کلید مسیر درونی: دستگاه %1$s، IPv4 %2$s، IPv6 %3$s</string>
     <string name="aether_log_inner_key_missing">کلید مسیر درونی: هنوز ثبت نشده؛ در اولین اسکن یا اتصال ثبت می‌شود</string>
+    <string name="aether_renew_blocked">پیش از دریافت کلید جدید WARP، اتصال Aether را قطع کنید؛ اتصال فعلی از کلید کنونی استفاده می‌کند</string>
+    <string name="title_aether_core">هسته Aether</string>
+    <string name="summary_aether_core">کلاینت WARP ساخته CluvexStudio که با مجوز AGPL-3.0 همراه برنامه است. برای دیدن کد منبع ضربه بزنید.</string>
     <string-array name="aether_scan_entries">
         <item>توربو</item>
         <item>متعادل</item>

@@ -35,11 +35,13 @@ class ServerAetherViewModelTest {
 
     private class FakeSource : AetherEditorSource {
         var available = true
+        var sessionActive = false
         var scanner: suspend (ProfileItem, (String) -> Unit) -> AetherScanResult? = { _, _ -> null }
         var renewer: suspend (ProfileItem, (String) -> Unit) -> AetherIdentityStatus? = { _, _ -> null }
         val identities = mutableMapOf<AetherProtocol, AetherIdentityStatus>()
 
         override suspend fun isCoreAvailable() = available
+        override suspend fun isSessionActive() = sessionActive
         override suspend fun scan(profile: ProfileItem, onOutput: (String) -> Unit) = scanner(profile, onOutput)
         override suspend fun identityStatus(protocol: AetherProtocol) =
             identities[protocol] ?: AetherIdentityStatus(protocol, null)
@@ -75,6 +77,7 @@ class ServerAetherViewModelTest {
         assertEquals(AetherScanState.Idle, viewModel.scanState.value)
         assertFalse(viewModel.isCoreAvailable.value)
         assertFalse(viewModel.isRenewingIdentity.value)
+        assertFalse(viewModel.isSessionActive.value)
         assertTrue(viewModel.log.value.isEmpty())
     }
 
@@ -269,6 +272,37 @@ class ServerAetherViewModelTest {
             ),
             viewModel.texts()
         )
+    }
+
+    @Test
+    fun aLiveSessionIsReportedWhenTheScreenOpens() {
+        source.sessionActive = true
+
+        assertTrue(viewModel().isSessionActive.value)
+    }
+
+    @Test
+    fun theKeyIsNotRenewedUnderALiveSession() {
+        var renewals = 0
+        source.renewer = { _, _ -> renewals++; null }
+        val viewModel = viewModel()
+        assertFalse(viewModel.isSessionActive.value)
+
+        source.sessionActive = true
+        viewModel.renewIdentity(profile)
+
+        assertEquals(0, renewals)
+        assertTrue(viewModel.isSessionActive.value)
+        assertFalse(viewModel.isRenewingIdentity.value)
+        val blocked = viewModel.log.value.single()
+        assertEquals(resource(R.string.aether_renew_blocked), blocked.text)
+        assertEquals(Log.WARN, blocked.priority)
+
+        source.sessionActive = false
+        viewModel.refreshSession()
+        assertFalse(viewModel.isSessionActive.value)
+        viewModel.renewIdentity(profile)
+        assertEquals(1, renewals)
     }
 
     @Test

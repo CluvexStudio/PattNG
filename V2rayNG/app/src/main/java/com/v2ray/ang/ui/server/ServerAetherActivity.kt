@@ -79,10 +79,17 @@ class ServerAetherActivity : BaseServerActivity() {
         val isCoreAvailable by viewModel.isCoreAvailable.collectAsStateWithLifecycle()
         val scanState by viewModel.scanState.collectAsStateWithLifecycle()
         val isRenewingIdentity by viewModel.isRenewingIdentity.collectAsStateWithLifecycle()
+        val isSessionActive by viewModel.isSessionActive.collectAsStateWithLifecycle()
         val log by viewModel.log.collectAsStateWithLifecycle()
         var showRenewConfirm by rememberSaveable { mutableStateOf(false) }
         val isScanning = scanState == AetherScanState.Scanning
         val isBusy = isScanning || isRenewingIdentity
+        // The key is shared by every Aether profile, so a live session on any of them blocks renewal.
+        val renewBlocked = isSessionActive || isRunning
+
+        LaunchedEffect(Unit) {
+            viewModel.refreshSession()
+        }
 
         val protocol = AetherProtocol.fromString(uiState.aetherProtocol)
         val usesHttp2 = protocol == AetherProtocol.MASQUE &&
@@ -226,7 +233,7 @@ class ServerAetherActivity : BaseServerActivity() {
             }
             OutlinedButton(
                 onClick = { showRenewConfirm = true },
-                enabled = isCoreAvailable && !isBusy,
+                enabled = isCoreAvailable && !isBusy && !renewBlocked,
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
                 if (isRenewingIdentity) {
@@ -236,6 +243,14 @@ class ServerAetherActivity : BaseServerActivity() {
                     stringResource(
                         if (isRenewingIdentity) R.string.aether_action_renewing_key else R.string.aether_action_renew_key
                     )
+                )
+            }
+            if (renewBlocked) {
+                Text(
+                    text = stringResource(R.string.aether_renew_blocked),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
             if (!isCoreAvailable) {
