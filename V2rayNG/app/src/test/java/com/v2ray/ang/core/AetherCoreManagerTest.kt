@@ -242,4 +242,47 @@ class AetherCoreManagerTest {
         assertEquals(Log.INFO, AetherCoreManager.outputPriority("[unterminated header"))
         assertEquals(Log.INFO, AetherCoreManager.outputPriority("[]"))
     }
+
+    @Test
+    fun theSessionLogLevelFollowsTheAppSetting() {
+        assertEquals("debug", AetherCoreManager.coreLogLevel("debug"))
+        assertEquals("info", AetherCoreManager.coreLogLevel("info"))
+        assertEquals("warn", AetherCoreManager.coreLogLevel("warning"))
+        assertEquals("warn", AetherCoreManager.coreLogLevel("Warn"))
+        assertEquals("error", AetherCoreManager.coreLogLevel("error"))
+        assertEquals("error", AetherCoreManager.coreLogLevel("none"))
+        assertEquals("info", AetherCoreManager.coreLogLevel(null))
+        assertEquals("info", AetherCoreManager.coreLogLevel("verbose"))
+
+        assertEquals("warn", valueAfter(AetherCoreManager.buildArguments(profile(), 10819, logLevel = "warn"), "--log-level"))
+        assertEquals("info", valueAfter(AetherCoreManager.buildArguments(profile(), 0, scan = true), "--log-level"))
+    }
+
+    @Test
+    fun aLeftoverCoreIsRecognisedByItsPortOrItsDeadOwner() {
+        val session = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:10819", "--protocol", "masque")
+        val scan = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:0", "--protocol", "masque")
+
+        assertEquals("127.0.0.1:10819", AetherCoreManager.bindAddress(session))
+        assertNull(AetherCoreManager.bindAddress(listOf("/data/app/lib/libaether.so", "--bind")))
+        assertNull(AetherCoreManager.bindAddress(emptyList()))
+
+        assertTrue(AetherCoreManager.isStale(session, ownerAlive = true, bindAddress = "127.0.0.1:10819"))
+        assertTrue(AetherCoreManager.isStale(session, ownerAlive = null, bindAddress = "127.0.0.1:10819"))
+        assertFalse(AetherCoreManager.isStale(scan, ownerAlive = true, bindAddress = "127.0.0.1:10819"))
+        assertFalse(AetherCoreManager.isStale(scan, ownerAlive = null, bindAddress = "127.0.0.1:10819"))
+        assertTrue(AetherCoreManager.isStale(scan, ownerAlive = false, bindAddress = "127.0.0.1:10819"))
+        assertTrue(AetherCoreManager.isStale(scan, ownerAlive = false, bindAddress = null))
+        assertFalse(AetherCoreManager.isStale(session, ownerAlive = true, bindAddress = null))
+        assertFalse(AetherCoreManager.isStale(session, ownerAlive = null, bindAddress = null))
+    }
+
+    @Test
+    fun theOwnerIsReadFromTheEnvironmentTheAppGaveTheCore() {
+        val environ = listOf("HOME=/data/user/0/app/files/aether", "${AetherCoreManager.OWNER_ENV}=4242", "TMPDIR=/tmp")
+        assertEquals(4242, AetherCoreManager.ownerPid(environ))
+        assertNull(AetherCoreManager.ownerPid(listOf("HOME=/x", "${AetherCoreManager.OWNER_ENV}=")))
+        assertNull(AetherCoreManager.ownerPid(listOf("HOME=/x")))
+        assertNull(AetherCoreManager.ownerPid(null))
+    }
 }

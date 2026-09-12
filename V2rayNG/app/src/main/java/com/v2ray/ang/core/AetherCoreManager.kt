@@ -11,6 +11,7 @@ import com.v2ray.ang.enums.AetherObfuscation
 import com.v2ray.ang.enums.AetherProtocol
 import com.v2ray.ang.enums.AetherScanMode
 import com.v2ray.ang.enums.AetherTransport
+import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.util.LogUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -27,16 +28,32 @@ import java.io.File
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.Locale
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
+/**
+ * Owns the Aether core process of the daemon: one live session at a time, an exit callback the
+ * service reacts to, output relayed into the app log, readiness probing, and cleanup of leftover
+ * processes. `service/ProcessService` is a fire-and-forget wrapper with none of that lifecycle,
+ * which is why this is a separate owner rather than an extension of it.
+ */
 object AetherCoreManager {
 
     private const val BINARY_NAME = "libaether.so"
     private const val PROBE_TIMEOUT_MS = 1000
     private const val READY_POLL_MS = 500L
+    private const val DEFAULT_LOG_LEVEL = "info"
+
+    /**
+     * Environment variable naming the app process that spawned a core process. Rust ignores
+     * SIGPIPE and the core has no parent-death handling, so a core whose owner was killed keeps
+     * running until something else kills it; [reapStale] recognises such orphans by this value.
+     */
+    internal const val OWNER_ENV = "PATTNG_AETHER_OWNER"
 
     private val logLevels = setOf("ERROR", "WARN", "INFO", "DEBUG", "TRACE")
+    private val procDir = File("/proc")
 
     private val lifecycle = Executors.newSingleThreadExecutor { task ->
         Thread(task, "aether-core").apply { isDaemon = true }
@@ -51,7 +68,12 @@ object AetherCoreManager {
 
     fun isSupported(context: Context): Boolean = binary(context).canExecute()
 
-    fun buildArguments(profile: ProfileItem, port: Int, scan: Boolean = false): List<String> {
+    fun buildArguments(
+        profile: ProfileItem,
+        port: Int,
+        scan: Boolean = false,
+        logLevel: String = DEFAULT_LOG_LEVEL,
+    ): List<String> {
         val protocol = AetherProtocol.fromString(profile.aetherProtocol)
         return buildList {
             addAll(listOf("--bind", "${AppConfig.LOOPBACK}:$port"))
@@ -84,8 +106,20 @@ object AetherCoreManager {
             }
 
             add(if (scan) "--no-quick-reconnect" else "--quick-reconnect")
-            addAll(listOf("--log-level", "info"))
+            addAll(listOf("--log-level", logLevel))
         }
+    }
+
+    /**
+     * Maps the app's core log level setting onto the levels the core accepts. Only the session
+     * follows the setting: scans and key renewals keep the default because they read info lines.
+     */
+    internal fun coreLogLevel(appLevel: String?): String = when (appLevel?.lowercase(Locale.US)) {
+        "debug" -> "debug"
+        "info" -> "info"
+        "warning", "warn" -> "warn"
+        "error", "none" -> "error"
+        else -> DEFAULT_LOG_LEVEL
     }
 
     internal fun startProcess(context: Context, arguments: List<String>): Process {
@@ -94,6 +128,7 @@ object AetherCoreManager {
             .directory(workDir)
             .redirectErrorStream(true)
         builder.environment().apply {
+            put(OWNER_ENV, android.os.Process.myPid().toString())
             put("HOME", workDir.absolutePath)
             put("TMPDIR", context.cacheDir.absolutePath)
             put("AETHER_CONFIG", File(workDir, AetherIdentityManager.BASE_FILE).absolutePath)
@@ -112,6 +147,7 @@ object AetherCoreManager {
     ): T? = coroutineScope {
         val process = withContext(Dispatchers.IO) {
             try {
+                reapStale(context, null)
                 startProcess(context, arguments)
             } catch (e: IOException) {
                 LogUtil.e(AppConfig.TAG, "AetherCore: failed to launch $source", e)
@@ -145,7 +181,8 @@ object AetherCoreManager {
         val next = Session(onExit)
         session = next
         val appContext = context.applicationContext
-        val arguments = buildArguments(profile, socksPort)
+        val logLevel = coreLogLevel(MmkvManager.decodeSettingsString(AppConfig.PREF_LOGLEVEL))
+        val arguments = buildArguments(profile, socksPort, logLevel = logLevel)
         lifecycle.execute { open(next, appContext, arguments) }
     }
 
@@ -215,11 +252,54 @@ object AetherCoreManager {
             .takeIf { it.size >= 3 && it[1] in logLevels }
     }
 
+    /**
+     * Kills leftover core processes of this app: any whose owning app process is gone and, when
+     * [bindAddress] is given, any still holding that listener address. Android can kill the
+     * daemon, the editor or the test service without their child processes following, and a
+     * survivor on the session port would otherwise make every later start fail until a reboot.
+     */
+    internal fun reapStale(context: Context, bindAddress: String?) {
+        val binary = binary(context).absolutePath
+        val entries = procDir.listFiles() ?: return
+        for (entry in entries) {
+            val pid = entry.name.toIntOrNull() ?: continue
+            val argv = readNulSeparated(File(entry, "cmdline")) ?: continue
+            if (argv.firstOrNull() != binary) continue
+            val ownerAlive = ownerPid(readNulSeparated(File(entry, "environ")))
+                ?.let { File(procDir, it.toString()).isDirectory }
+            if (!isStale(argv, ownerAlive, bindAddress)) continue
+            LogUtil.w(
+                AppConfig.TAG,
+                "AetherCore: killing a leftover core process, pid=$pid bind=${bindAddress(argv)} ownerAlive=$ownerAlive"
+            )
+            android.os.Process.killProcess(pid)
+        }
+    }
+
+    /** A core process is stale when its owner is known to be dead or it holds the address we are about to bind. */
+    internal fun isStale(argv: List<String>, ownerAlive: Boolean?, bindAddress: String?): Boolean =
+        ownerAlive == false || (bindAddress != null && bindAddress(argv) == bindAddress)
+
+    internal fun bindAddress(argv: List<String>): String? =
+        argv.indexOf("--bind").takeIf { it >= 0 }?.let { argv.getOrNull(it + 1) }
+
+    internal fun ownerPid(environ: List<String>?): Int? =
+        environ?.firstOrNull { it.startsWith("$OWNER_ENV=") }?.substringAfter('=')?.toIntOrNull()
+
+    private fun readNulSeparated(file: File): List<String>? = try {
+        file.readBytes().toString(Charsets.UTF_8).split('\u0000').filter { it.isNotEmpty() }
+    } catch (_: IOException) {
+        null
+    } catch (_: SecurityException) {
+        null
+    }
+
     private fun binary(context: Context): File =
         File(context.applicationInfo.nativeLibraryDir, BINARY_NAME)
 
     private fun open(target: Session, context: Context, arguments: List<String>) {
         if (session !== target) return
+        reapStale(context, bindAddress(arguments))
         val process = try {
             startProcess(context, arguments)
         } catch (e: IOException) {

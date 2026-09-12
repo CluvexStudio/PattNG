@@ -38,6 +38,27 @@ object NotificationManager {
     private var mBuilder: NotificationCompat.Builder? = null
     private var speedNotificationJob: Job? = null
     private var mNotificationManager: NotificationManager? = null
+    private var statusLine: String? = null
+    private var lastContentText: String? = null
+
+    /**
+     * Shows a line above the traffic text while the running profile cannot carry traffic yet;
+     * pass null once it can. The Aether warm-up uses it, since Xray is up before the tunnel
+     * behind it is.
+     */
+    fun setStatusLine(text: String?) {
+        statusLine = text
+        val builder = mBuilder ?: return
+        val content = composeContentText()
+        builder.setStyle(NotificationCompat.BigTextStyle().bigText(content))
+        builder.setContentText(content)
+        getNotificationManager()?.notify(NOTIFICATION_ID, builder.build())
+    }
+
+    private fun composeContentText(): String? =
+        listOfNotNull(statusLine, lastContentText?.takeIf { it.isNotEmpty() })
+            .joinToString("\n")
+            .ifEmpty { null }
 
     /**
      * Starts the speed notification.
@@ -66,6 +87,7 @@ object NotificationManager {
 
         // Reset last query time to avoid querying stats too soon after showing the notification
         lastQueryTime = System.currentTimeMillis()
+        lastContentText = null
 
         val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
 
@@ -134,6 +156,8 @@ object NotificationManager {
         service.stopForeground(Service.STOP_FOREGROUND_REMOVE)
 
         mBuilder = null
+        statusLine = null
+        lastContentText = null
         speedNotificationJob?.cancel()
         speedNotificationJob = null
         mNotificationManager = null
@@ -181,8 +205,10 @@ object NotificationManager {
             } else {
                 mBuilder?.setSmallIcon(R.drawable.ic_stat_direct)
             }
-            mBuilder?.setStyle(NotificationCompat.BigTextStyle().bigText(contentText))
-            mBuilder?.setContentText(contentText)
+            lastContentText = contentText
+            val content = composeContentText()
+            mBuilder?.setStyle(NotificationCompat.BigTextStyle().bigText(content))
+            mBuilder?.setContentText(content)
             getNotificationManager()?.notify(NOTIFICATION_ID, mBuilder?.build())
         }
     }

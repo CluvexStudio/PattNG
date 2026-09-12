@@ -35,9 +35,11 @@ import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import libv2ray.CoreCallbackHandler
@@ -57,6 +59,10 @@ object CoreServiceManager {
     private var browserDialer: IDialerService? = null
     private var networkMonitor: NetworkMonitor? = null
     private val connectionTestScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /** Owns the Aether warm-up wait; cancelled on every start and stop so a stale wait cannot report. */
+    private val aetherScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var aetherWarmUpJob: Job? = null
 
     @Volatile
     private var isReloading = false
@@ -141,12 +147,33 @@ object CoreServiceManager {
             error(result.errorMessage.ifBlank { "Failed to get V2Ray config" })
         }
 
+        cancelAetherWarmUp()
         if (config.configType == EConfigType.AETHER) {
+            if (!AetherCoreManager.isSupported(service)) {
+                error(service.getString(R.string.aether_unsupported_abi))
+            }
             AetherCoreManager.start(service, config) { onAetherExit(guid) }
         } else {
             AetherCoreManager.stop()
         }
 
+        try {
+            launchNativeCore(service, config, result.content, vpnInterface, isReload)
+        } catch (e: Exception) {
+            // Setup failed after this attempt spawned the Aether process; release it with the rest.
+            AetherCoreManager.stop()
+            throw e
+        }
+    }
+
+    @Throws(Exception::class)
+    private fun launchNativeCore(
+        service: Service,
+        config: ProfileItem,
+        content: String,
+        vpnInterface: ParcelFileDescriptor?,
+        isReload: Boolean,
+    ) {
         currentConfig = config
         var tunFd = vpnInterface?.fd ?: 0
         val dialerMode = BrowserDialerMode.from(config.browserDialerMode)
@@ -163,7 +190,7 @@ object CoreServiceManager {
         if (dialerAddr.isNotNullEmpty()) {
             CoreNativeManager.reconcileBrowserDialer(dialerAddr)
         }
-        coreController.startLoop(result.content, tunFd)
+        coreController.startLoop(content, tunFd)
 
         if (!isRunning()) {
             error("Core failed to start")
@@ -187,11 +214,44 @@ object CoreServiceManager {
             else -> {}
         }
 
-        if (!isReload) {
+        if (config.configType == EConfigType.AETHER) {
+            announceAetherWarmUp(service, isReload)
+        } else if (!isReload) {
             MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_SUCCESS, "")
         }
         NotificationManager.startSpeedNotification()
         LogUtil.i(AppConfig.TAG, "StartCore-Manager: Core started successfully")
+    }
+
+    /**
+     * Xray is up as soon as it starts, but an Aether profile carries no traffic until the Aether
+     * process has scanned and connected, which can take minutes. Clients are told the service is
+     * running right away, the main screen and the notification show the connecting state, and the
+     * start-success signal follows once the Aether SOCKS listener accepts connections.
+     */
+    private fun announceAetherWarmUp(service: Service, isReload: Boolean) {
+        val connecting = service.getString(R.string.aether_core_connecting)
+        MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_RUNNING, "")
+        MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_CONNECTING, connecting)
+        NotificationManager.setStatusLine(connecting)
+        aetherWarmUpJob = aetherScope.launch {
+            var listening = false
+            while (isActive && !listening && AetherCoreManager.isRunning) {
+                listening = AetherCoreManager.awaitListening(AETHER_WARM_UP_MS)
+            }
+            if (!listening || !isActive || !isRunning()) return@launch
+            NotificationManager.setStatusLine(null)
+            val ready = if (isReload) AppConfig.MSG_STATE_RUNNING else AppConfig.MSG_STATE_START_SUCCESS
+            MessageHelper.sendMsg2UI(service, ready, "")
+        }
+    }
+
+    private fun isAetherWarmingUp(): Boolean = aetherWarmUpJob?.isActive == true
+
+    private fun cancelAetherWarmUp() {
+        aetherWarmUpJob?.cancel()
+        aetherWarmUpJob = null
+        NotificationManager.setStatusLine(null)
     }
 
     private fun onAetherExit(guid: String) {
@@ -220,6 +280,7 @@ object CoreServiceManager {
         networkMonitor?.unregister()
         networkMonitor = null
         currentVpnInterface = null
+        cancelAetherWarmUp()
         AetherCoreManager.stop()
 
         if (isRunning()) {
@@ -497,6 +558,14 @@ object CoreServiceManager {
                 AppConfig.MSG_REGISTER_CLIENT -> {
                     if (isRunning()) {
                         MessageHelper.sendMsg2UI(serviceControl.getService(), AppConfig.MSG_STATE_RUNNING, "")
+                        if (isAetherWarmingUp()) {
+                            val service = serviceControl.getService()
+                            MessageHelper.sendMsg2UI(
+                                service,
+                                AppConfig.MSG_STATE_CONNECTING,
+                                service.getString(R.string.aether_core_connecting)
+                            )
+                        }
                     } else {
                         MessageHelper.sendMsg2UI(serviceControl.getService(), AppConfig.MSG_STATE_NOT_RUNNING, "")
                     }

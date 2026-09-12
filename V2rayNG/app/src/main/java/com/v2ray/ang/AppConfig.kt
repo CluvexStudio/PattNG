@@ -130,6 +130,7 @@ object AppConfig {
     const val APP_URL = "$GITHUB_URL/patterniha/PattNG"
     const val APP_API_URL = "https://api.github.com/repos/patterniha/PattNG/releases"
     const val APP_ISSUES_URL = "$APP_URL/issues"
+    const val AETHER_URL = "$GITHUB_URL/CluvexStudio/aether"
     const val APP_WIKI_MODE = "$APP_URL/wiki/Mode"
     const val APP_PRIVACY_POLICY = "$GITHUB_RAW_URL/2dust/v2rayNG/master/CR.md"
     const val APP_PROMOTION_URL = "aHR0cHM6Ly85LjIzNDQ1Ni54eXovYWJjLmh0bWw="
@@ -184,6 +185,9 @@ object AppConfig {
     const val MSG_STATE_START = 3
     const val MSG_STATE_START_SUCCESS = 31
     const val MSG_STATE_START_FAILURE = 32
+
+    /** The service is up but the selected profile cannot carry traffic yet; content is the localized reason. */
+    const val MSG_STATE_CONNECTING = 33
     const val MSG_STATE_STOP = 4
     const val MSG_STATE_STOP_SUCCESS = 41
     const val MSG_STATE_RESTART = 5

@@ -8,6 +8,9 @@ import com.v2ray.ang.dto.LocateTarget
 sealed interface MainStatus {
     data object Disconnected : MainStatus
     data object Connected : MainStatus
+
+    /** Running, but the profile is still bringing its tunnel up; the daemon supplies the text. */
+    data class Connecting(val message: String) : MainStatus
     data object Testing : MainStatus
     data class TestProgress(val progress: String) : MainStatus
     data class ConnectionTest(val result: ConnectionTestResult) : MainStatus

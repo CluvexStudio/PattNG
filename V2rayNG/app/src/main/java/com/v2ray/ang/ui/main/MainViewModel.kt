@@ -111,6 +111,12 @@ class MainViewModel(
                 updateRunningState(false)
             }
 
+            is MainServiceEvent.StateConnecting -> {
+                if (uiState.value.isRunning) {
+                    _uiState.update { it.copy(status = MainStatus.Connecting(event.message)) }
+                }
+            }
+
             MainServiceEvent.StateStopSuccess -> updateRunningState(false)
             is MainServiceEvent.MeasureDelayResult -> {
                 if (!uiState.value.isRunning || !testRequests.completeCurrent(event.requestId)) return
@@ -149,6 +155,7 @@ class MainViewModel(
     internal fun formatStatus(status: MainStatus): String = when (status) {
         MainStatus.Disconnected -> dataSource.getString(R.string.connection_not_connected)
         MainStatus.Connected -> dataSource.getString(R.string.connection_connected)
+        is MainStatus.Connecting -> status.message
         MainStatus.Testing -> dataSource.getString(R.string.connection_test_testing)
         is MainStatus.TestProgress -> dataSource.getString(
             R.string.connection_running_task_left,
@@ -842,8 +849,7 @@ class MainViewModel(
             state.copy(
                 isRunning = running,
                 isTesting = testRequests.isTesting,
-                status = if (!clearTestingText && state.isRunning == running) state.status
-                else if (running) MainStatus.Connected else MainStatus.Disconnected
+                status = runningStatus(state.status, state.isRunning, running, clearTestingText)
             )
         }
     }
@@ -857,6 +863,22 @@ class MainViewModel(
         cancelAllPing()
         dataSource.close()
         super.onCleared()
+    }
+
+    companion object {
+        /**
+         * The status after a running or stopped signal. A test text survives a repeated signal
+         * that changes nothing, but a connecting status does not: the daemon repeats the
+         * connecting signal right after a running one whenever the tunnel is still on its way.
+         */
+        internal fun runningStatus(
+            current: MainStatus,
+            wasRunning: Boolean,
+            running: Boolean,
+            clearTestingText: Boolean,
+        ): MainStatus =
+            if (!clearTestingText && wasRunning == running && current !is MainStatus.Connecting) current
+            else if (running) MainStatus.Connected else MainStatus.Disconnected
     }
 
     // ---------- Factory ----------
