@@ -259,26 +259,49 @@ object AetherCoreManager {
      * survivor on the session port would otherwise make every later start fail until a reboot.
      */
     internal fun reapStale(context: Context, bindAddress: String?) {
-        val binary = binary(context).absolutePath
-        val entries = procDir.listFiles() ?: return
-        for (entry in entries) {
-            val pid = entry.name.toIntOrNull() ?: continue
-            val argv = readNulSeparated(File(entry, "cmdline")) ?: continue
-            if (argv.firstOrNull() != binary) continue
-            val ownerAlive = ownerPid(readNulSeparated(File(entry, "environ")))
-                ?.let { File(procDir, it.toString()).isDirectory }
-            if (!isStale(argv, ownerAlive, bindAddress)) continue
+        for (core in coreProcesses(context)) {
+            if (!isStale(core.argv, core.ownerAlive, bindAddress)) continue
             LogUtil.w(
                 AppConfig.TAG,
-                "AetherCore: killing a leftover core process, pid=$pid bind=${bindAddress(argv)} ownerAlive=$ownerAlive"
+                "AetherCore: killing a leftover core process, pid=${core.pid} bind=${bindAddress(core.argv)} ownerAlive=${core.ownerAlive}"
             )
-            android.os.Process.killProcess(pid)
+            android.os.Process.killProcess(core.pid)
         }
     }
+
+    /**
+     * True while a core owned by a living app process holds the session address, whether it is
+     * already listening or still scanning. Probing the listener alone misses the scanning phase,
+     * which is exactly when the shared key files must not be replaced.
+     */
+    fun hasSessionProcess(context: Context): Boolean =
+        coreProcesses(context).any { isSession(it.argv, it.ownerAlive, sessionAddress) }
 
     /** A core process is stale when its owner is known to be dead or it holds the address we are about to bind. */
     internal fun isStale(argv: List<String>, ownerAlive: Boolean?, bindAddress: String?): Boolean =
         ownerAlive == false || (bindAddress != null && bindAddress(argv) == bindAddress)
+
+    /** A core process counts as the session while its owner is not known to be dead and it holds the session address. */
+    internal fun isSession(argv: List<String>, ownerAlive: Boolean?, sessionAddress: String): Boolean =
+        ownerAlive != false && bindAddress(argv) == sessionAddress
+
+    private val sessionAddress: String get() = "${AppConfig.LOOPBACK}:$socksPort"
+
+    /** A core process of this app found in /proc; [ownerAlive] is null when its owner could not be read. */
+    internal class CoreProcess(val pid: Int, val argv: List<String>, val ownerAlive: Boolean?)
+
+    private fun coreProcesses(context: Context): List<CoreProcess> {
+        val binary = binary(context).absolutePath
+        val entries = procDir.listFiles() ?: return emptyList()
+        return entries.mapNotNull { entry ->
+            val pid = entry.name.toIntOrNull() ?: return@mapNotNull null
+            val argv = readNulSeparated(File(entry, "cmdline")) ?: return@mapNotNull null
+            if (argv.firstOrNull() != binary) return@mapNotNull null
+            val ownerAlive = ownerPid(readNulSeparated(File(entry, "environ")))
+                ?.let { File(procDir, it.toString()).isDirectory }
+            CoreProcess(pid, argv, ownerAlive)
+        }
+    }
 
     internal fun bindAddress(argv: List<String>): String? =
         argv.indexOf("--bind").takeIf { it >= 0 }?.let { argv.getOrNull(it + 1) }

@@ -278,6 +278,18 @@ class AetherCoreManagerTest {
     }
 
     @Test
+    fun theSessionIsRecognisedWhileItScansAndWhileItListens() {
+        val session = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:10819", "--protocol", "masque")
+        val scan = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:0", "--protocol", "masque")
+
+        assertTrue(AetherCoreManager.isSession(session, ownerAlive = true, sessionAddress = "127.0.0.1:10819"))
+        assertTrue(AetherCoreManager.isSession(session, ownerAlive = null, sessionAddress = "127.0.0.1:10819"))
+        assertFalse(AetherCoreManager.isSession(session, ownerAlive = false, sessionAddress = "127.0.0.1:10819"))
+        assertFalse(AetherCoreManager.isSession(scan, ownerAlive = true, sessionAddress = "127.0.0.1:10819"))
+        assertFalse(AetherCoreManager.isSession(emptyList(), ownerAlive = true, sessionAddress = "127.0.0.1:10819"))
+    }
+
+    @Test
     fun theOwnerIsReadFromTheEnvironmentTheAppGaveTheCore() {
         val environ = listOf("HOME=/data/user/0/app/files/aether", "${AetherCoreManager.OWNER_ENV}=4242", "TMPDIR=/tmp")
         assertEquals(4242, AetherCoreManager.ownerPid(environ))
