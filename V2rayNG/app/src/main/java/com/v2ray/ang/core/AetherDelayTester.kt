@@ -44,6 +44,7 @@ object AetherDelayTester {
         ACTIVE_SESSION,
         NEW_TUNNEL,
         SKIP,
+        NOT_READY,
     }
 
     suspend fun measure(context: Context, guid: String, profile: ProfileItem, url: String): Long {
@@ -57,11 +58,19 @@ object AetherDelayTester {
                 LogUtil.i(AppConfig.TAG, "AetherTest: left untested, it shares the live session's key, guid=$guid")
                 UNTESTED
             }
+            Route.NOT_READY -> {
+                // The running profile is not a failure before its tunnel is up; it is just not measurable yet.
+                LogUtil.i(AppConfig.TAG, "AetherTest: left untested, the live session is still connecting, guid=$guid")
+                UNTESTED
+            }
         }
     }
 
-    /** The daemon's live Aether session: its protocol, and its arguments when its process could be read. */
-    internal class LiveSession(val protocol: AetherProtocol, val arguments: List<String>?)
+    /**
+     * The daemon's live Aether session: its protocol, its arguments when its process could be read,
+     * and whether its SOCKS listener accepts connections yet.
+     */
+    internal class LiveSession(val protocol: AetherProtocol, val arguments: List<String>?, val listening: Boolean)
 
     /**
      * The daemon's live Aether session, or null without one. Its core process names the protocol
@@ -70,10 +79,11 @@ object AetherDelayTester {
      * stands in for it.
      */
     private fun liveSession(context: Context, activeGuid: String?): LiveSession? {
-        AetherCoreManager.sessionArguments(context)?.let { return LiveSession(AetherCoreManager.protocolOf(it), it) }
-        if (!AetherCoreManager.acceptsConnections(AetherCoreManager.socksPort)) return null
+        val listening = AetherCoreManager.acceptsConnections(AetherCoreManager.socksPort)
+        AetherCoreManager.sessionArguments(context)?.let { return LiveSession(AetherCoreManager.protocolOf(it), it, listening) }
+        if (!listening) return null
         val active = activeGuid?.let(MmkvManager::decodeServerConfig)?.takeIf { it.configType == EConfigType.AETHER } ?: return null
-        return LiveSession(AetherProtocol.fromString(active.aetherProtocol), arguments = null)
+        return LiveSession(AetherProtocol.fromString(active.aetherProtocol), arguments = null, listening = true)
     }
 
     /**
@@ -100,11 +110,12 @@ object AetherDelayTester {
      * Where a test goes: through the live session for the profile it runs, nowhere for another
      * profile whose key the session uses, and through a tunnel of its own otherwise. The running
      * profile is told by the session's arguments; without them, the selected profile stands in.
+     * While the session is still connecting, the running profile is left untested rather than failed.
      */
     internal fun route(guid: String, profile: ProfileItem, activeGuid: String?, session: LiveSession?): Route {
         if (session == null) return Route.NEW_TUNNEL
         val running = session.arguments?.let { AetherCoreManager.runsProfile(it, profile) } ?: (guid == activeGuid)
-        if (running) return Route.ACTIVE_SESSION
+        if (running) return if (session.listening) Route.ACTIVE_SESSION else Route.NOT_READY
         val shared = AetherIdentityManager.sharesIdentity(AetherProtocol.fromString(profile.aetherProtocol), session.protocol)
         return if (shared) Route.SKIP else Route.NEW_TUNNEL
     }

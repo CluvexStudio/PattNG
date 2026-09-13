@@ -19,8 +19,8 @@ class AetherDelayTesterTest {
     private fun aether(protocol: AetherProtocol) =
         ProfileItem.create(EConfigType.AETHER).apply { aetherProtocol = protocol.type }
 
-    private fun session(protocol: AetherProtocol, running: ProfileItem? = null) =
-        AetherDelayTester.LiveSession(protocol, running?.let { AetherCoreManager.buildArguments(it, AetherCoreManager.socksPort) })
+    private fun session(protocol: AetherProtocol, running: ProfileItem? = null, listening: Boolean = true) =
+        AetherDelayTester.LiveSession(protocol, running?.let { AetherCoreManager.buildArguments(it, AetherCoreManager.socksPort) }, listening)
 
     @Test
     fun withoutAnAetherSessionEachTestGetsItsOwnTunnel() {
@@ -37,6 +37,17 @@ class AetherDelayTesterTest {
         // Without the process, the selected profile stands in for the running one.
         assertEquals(Route.ACTIVE_SESSION, AetherDelayTester.route("a", wireguard, "a", session(AetherProtocol.WIREGUARD)))
         assertEquals(Route.SKIP, AetherDelayTester.route("a", wireguard, "b", session(AetherProtocol.WIREGUARD)))
+    }
+
+    @Test
+    fun theRunningProfileIsLeftUntestedWhileItsSessionIsStillConnecting() {
+        val wireguard = aether(AetherProtocol.WIREGUARD).apply { server = "162.159.192.1"; serverPort = "2408" }
+        val connecting = session(AetherProtocol.WIREGUARD, wireguard, listening = false)
+        // A request through a listener that is not up yet would fail, and that is not a failure of the profile.
+        assertEquals(Route.NOT_READY, AetherDelayTester.route("a", wireguard, "a", connecting))
+        // The other routes do not depend on the listener.
+        assertEquals(Route.SKIP, AetherDelayTester.route("b", aether(AetherProtocol.GOOL), "a", connecting))
+        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("b", aether(AetherProtocol.MASQUE), "a", connecting))
     }
 
     @Test
