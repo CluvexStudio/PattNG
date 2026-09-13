@@ -111,7 +111,7 @@ for abi in $ABIS; do
     "CXXFLAGS_${under_triple}=--target=$clang_target" \
     "AR_${under_triple}=$TOOLCHAIN/llvm-ar" \
     "BINDGEN_EXTRA_CLANG_ARGS_${under_triple}=--target=$triple --sysroot=$SYSROOT" \
-    cargo build --release --manifest-path "$CORE_DIR/Cargo.toml" --target "$triple" --bin aether
+    cargo build --release --locked --manifest-path "$CORE_DIR/Cargo.toml" --target "$triple" --bin aether
 
   produced="$CORE_DIR/target/$triple/release/aether"
   if [[ ! -f "$produced" ]]; then
