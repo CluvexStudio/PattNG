@@ -13,11 +13,13 @@ import com.v2ray.ang.enums.AetherScanMode
 import com.v2ray.ang.enums.AetherTransport
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.util.LogUtil
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -30,6 +32,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.Locale
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
 /**
@@ -145,19 +148,29 @@ object AetherCoreManager {
         onOutput: (String) -> Unit,
         block: suspend (output: ReceiveChannel<String>) -> T?,
     ): T? = coroutineScope {
-        val process = withContext(Dispatchers.IO) {
-            try {
-                reapStale(context, null)
-                startProcess(context, arguments)
-            } catch (e: IOException) {
-                LogUtil.e(AppConfig.TAG, "AetherCore: failed to launch $source", e)
-                null
+        // A cancellation can land while the spawn runs or while its result is on the way back to this
+        // coroutine; either way the core would keep running with nobody holding its handle, so the
+        // handle is kept aside and the core is destroyed on that path.
+        val spawned = AtomicReference<Process?>()
+        val process = try {
+            withContext(Dispatchers.IO) {
+                try {
+                    reapStale(context, null)
+                    startProcess(context, arguments).also(spawned::set)
+                } catch (e: IOException) {
+                    LogUtil.e(AppConfig.TAG, "AetherCore: failed to launch $source", e)
+                    null
+                }
             }
+        } catch (e: CancellationException) {
+            spawned.get()?.destroy()
+            throw e
         } ?: return@coroutineScope null
 
         val output = Channel<String>(Channel.UNLIMITED)
         launch(Dispatchers.IO) { forward(process, source, onOutput, output) }
         try {
+            ensureActive()
             block(output)
         } finally {
             process.destroy()
