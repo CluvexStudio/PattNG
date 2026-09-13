@@ -100,13 +100,14 @@ class ServerAetherActivity : BaseServerActivity() {
         val isScanning = scanState == AetherScanState.Scanning
         val isBusy = isScanning || isRenewingIdentity
         // The key files are shared by every Aether profile, so a live session on any of them blocks renewal.
-        val renewBlocked = session != null || isRunning
+        // Only the daemon-side evidence counts: a running non-Aether profile leaves both actions open.
+        val renewBlocked = session != null
 
         val protocol = AetherProtocol.fromString(uiState.aetherProtocol)
         val usesHttp2 = protocol == AetherProtocol.MASQUE &&
             AetherTransport.fromString(uiState.aetherTransport) == AetherTransport.HTTP2
-        // A scan opens a second tunnel on this protocol's key; the running profile's own session uses it.
-        val scanBlocked = isRunning || session?.disturbedByScanOf(protocol) == true
+        // A scan opens a second tunnel on this protocol's key; a live session on that key must not be disturbed.
+        val scanBlocked = session?.disturbedByScanOf(protocol) == true
 
         LaunchedEffect(protocol) {
             viewModel.showIdentity(protocol)
