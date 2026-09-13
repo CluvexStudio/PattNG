@@ -323,6 +323,18 @@ class AetherCoreManagerTest {
     }
 
     @Test
+    fun theRunningProfileIsToldByTheArgumentsOfItsSession() {
+        val pinned = profile(server = "162.159.198.1", port = "443")
+        val session = AetherCoreManager.buildArguments(pinned, 10819, logLevel = "warn")
+        assertTrue(AetherCoreManager.runsProfile(session, pinned))
+        assertTrue(AetherCoreManager.runsProfile(session, pinned.copy(remarks = "another name")))
+        assertFalse(AetherCoreManager.runsProfile(session, pinned.copy(serverPort = "2408")))
+        assertFalse(AetherCoreManager.runsProfile(session, profile(AetherProtocol.WIREGUARD, server = "162.159.198.1", port = "443")))
+        assertFalse(AetherCoreManager.runsProfile(AetherCoreManager.buildArguments(pinned, 0, scan = true), pinned))
+        assertFalse(AetherCoreManager.runsProfile(emptyList(), pinned))
+    }
+
+    @Test
     fun theOwnerIsReadFromTheEnvironmentTheAppGaveTheCore() {
         val environ = listOf("HOME=/data/user/0/app/files/aether", "${AetherCoreManager.OWNER_ENV}=4242", "TMPDIR=/tmp")
         assertEquals(4242, AetherCoreManager.ownerPid(environ))

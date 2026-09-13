@@ -19,45 +19,41 @@ class AetherDelayTesterTest {
     private fun aether(protocol: AetherProtocol) =
         ProfileItem.create(EConfigType.AETHER).apply { aetherProtocol = protocol.type }
 
+    private fun session(protocol: AetherProtocol, running: ProfileItem? = null) =
+        AetherDelayTester.LiveSession(protocol, running?.let { AetherCoreManager.buildArguments(it, AetherCoreManager.socksPort) })
+
     @Test
     fun withoutAnAetherSessionEachTestGetsItsOwnTunnel() {
         val masque = aether(AetherProtocol.MASQUE)
-        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("a", masque, "a", masque, sessionUp = false))
-        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("a", masque, null, null, sessionUp = true))
-        assertEquals(
-            Route.NEW_TUNNEL,
-            AetherDelayTester.route("a", masque, "b", ProfileItem.create(EConfigType.VLESS), sessionUp = true)
-        )
+        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("a", masque, "a", session = null))
+        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("a", masque, null, session = null))
     }
 
     @Test
-    fun theConnectedProfileIsMeasuredThroughItsOwnSession() {
-        val wireguard = aether(AetherProtocol.WIREGUARD)
-        assertEquals(Route.ACTIVE_SESSION, AetherDelayTester.route("a", wireguard, "a", wireguard, sessionUp = true))
+    fun theRunningProfileIsMeasuredThroughTheLiveSession() {
+        val wireguard = aether(AetherProtocol.WIREGUARD).apply { server = "162.159.192.1"; serverPort = "2408" }
+        // Told by the session's arguments, whichever profile is selected.
+        assertEquals(Route.ACTIVE_SESSION, AetherDelayTester.route("a", wireguard, "b", session(AetherProtocol.WIREGUARD, wireguard)))
+        // Without the process, the selected profile stands in for the running one.
+        assertEquals(Route.ACTIVE_SESSION, AetherDelayTester.route("a", wireguard, "a", session(AetherProtocol.WIREGUARD)))
+        assertEquals(Route.SKIP, AetherDelayTester.route("a", wireguard, "b", session(AetherProtocol.WIREGUARD)))
     }
 
     @Test
-    fun aProfileSharingTheConnectedKeyIsLeftAlone() {
-        assertEquals(
-            Route.SKIP,
-            AetherDelayTester.route("b", aether(AetherProtocol.MASQUE), "a", aether(AetherProtocol.MASQUE), sessionUp = true)
-        )
-        assertEquals(
-            Route.SKIP,
-            AetherDelayTester.route("b", aether(AetherProtocol.GOOL), "a", aether(AetherProtocol.WIREGUARD), sessionUp = true)
-        )
+    fun aProfileSharingTheLiveSessionsKeyIsLeftAlone() {
+        val running = aether(AetherProtocol.MASQUE).apply { server = "162.159.198.1"; serverPort = "443" }
+        val live = session(AetherProtocol.MASQUE, running)
+        assertEquals(Route.SKIP, AetherDelayTester.route("b", aether(AetherProtocol.MASQUE), "a", live))
+        // Selected, but not what the session runs: it is not measured through that session.
+        assertEquals(Route.SKIP, AetherDelayTester.route("b", aether(AetherProtocol.MASQUE), "b", live))
+        assertEquals(Route.SKIP, AetherDelayTester.route("b", aether(AetherProtocol.GOOL), "a", session(AetherProtocol.WIREGUARD)))
+        assertEquals(Route.SKIP, AetherDelayTester.route("b", aether(AetherProtocol.WIREGUARD), "a", session(AetherProtocol.GOOL)))
     }
 
     @Test
     fun aProfileWithADifferentKeyGetsItsOwnTunnel() {
-        assertEquals(
-            Route.NEW_TUNNEL,
-            AetherDelayTester.route("b", aether(AetherProtocol.MASQUE), "a", aether(AetherProtocol.WIREGUARD), sessionUp = true)
-        )
-        assertEquals(
-            Route.NEW_TUNNEL,
-            AetherDelayTester.route("b", aether(AetherProtocol.GOOL), "a", aether(AetherProtocol.MASQUE), sessionUp = true)
-        )
+        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("b", aether(AetherProtocol.MASQUE), "a", session(AetherProtocol.WIREGUARD)))
+        assertEquals(Route.NEW_TUNNEL, AetherDelayTester.route("b", aether(AetherProtocol.GOOL), "a", session(AetherProtocol.MASQUE)))
     }
 
     @Test

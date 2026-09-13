@@ -292,13 +292,30 @@ object AetherCoreManager {
     }
 
     /**
-     * The protocol of the daemon's live session, or null when no core owned by a living app
-     * process holds the session address. It is found through /proc, so it also covers the
-     * scanning phase before the listener exists, which is exactly when the shared key files
-     * must not be replaced and no second tunnel must be opened on the same key.
+     * The arguments of the daemon's live session core, without the binary, or null when no core
+     * owned by a living app process holds the session address. They are read from /proc, so they
+     * are available during the scanning phase before the listener exists, which is exactly when
+     * the shared key files must not be replaced and no second tunnel must be opened on the same
+     * key.
      */
-    fun sessionProtocol(context: Context): AetherProtocol? =
-        coreProcesses(context).firstOrNull { isSession(it.argv, it.ownerAlive, sessionAddress) }?.let { protocolOf(it.argv) }
+    fun sessionArguments(context: Context): List<String>? =
+        coreProcesses(context).firstOrNull { isSession(it.argv, it.ownerAlive, sessionAddress) }?.argv?.drop(1)
+
+    /** The protocol of the daemon's live session, or null without one; see [sessionArguments]. */
+    fun sessionProtocol(context: Context): AetherProtocol? = sessionArguments(context)?.let(::protocolOf)
+
+    /**
+     * True when [arguments] are those the daemon starts [profile] with, apart from the log level,
+     * which follows a setting that can change while the session runs. This is how another process
+     * tells the running profile from a merely selected one.
+     */
+    fun runsProfile(arguments: List<String>, profile: ProfileItem): Boolean =
+        withoutLogLevel(arguments) == withoutLogLevel(buildArguments(profile, socksPort))
+
+    private fun withoutLogLevel(arguments: List<String>): List<String> {
+        val index = arguments.indexOf("--log-level")
+        return if (index < 0) arguments else arguments.filterIndexed { i, _ -> i != index && i != index + 1 }
+    }
 
     /** A core process is stale when its owner is known to be dead or it holds the address we are about to bind. */
     internal fun isStale(argv: List<String>, ownerAlive: Boolean?, bindAddress: String?): Boolean =
