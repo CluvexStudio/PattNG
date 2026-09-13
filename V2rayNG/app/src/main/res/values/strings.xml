@@ -608,7 +608,7 @@
     <string name="aether_log_inner_key_ready">Inner hop key: device %1$s, IPv4 %2$s, IPv6 %3$s</string>
     <string name="aether_log_inner_key_missing">Inner hop key: none yet; one is registered on the first scan or connection</string>
     <string name="aether_renew_blocked">Disconnect the Aether profile before getting a new WARP key; the running connection uses the current key</string>
-    <string name="aether_scan_blocked">Disconnect the Aether profile before scanning; a scan would open a second tunnel on the running connection's key</string>
+    <string name="aether_scan_blocked">Disconnect the Aether profile before scanning; a scan would open a second tunnel on the running connection\'s key</string>
     <string name="title_aether_core">Aether core</string>
     <string name="summary_aether_core">WARP client by CluvexStudio, bundled under the AGPL-3.0 license. Tap to open its source code.</string>
     <string-array name="aether_scan_entries">
