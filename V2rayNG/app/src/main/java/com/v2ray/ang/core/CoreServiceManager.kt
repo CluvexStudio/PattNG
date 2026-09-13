@@ -120,11 +120,20 @@ object CoreServiceManager {
         } catch (e: Exception) {
             val message = e.message?.takeUnless { it.isBlank() } ?: e.javaClass.simpleName
             LogUtil.e(AppConfig.TAG, "StartCore-Manager: $message", e)
-            MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_FAILURE, message)
+            MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_FAILURE, userFacingReason(e))
             NotificationManager.cancelNotification()
             return false
         }
     }
+
+    /**
+     * A start or reload failure whose message is a localized resource string, meant for the main
+     * screen. Every other failure reaches the UI without a reason: its message is technical and
+     * belongs in the log, and the UI shows only resource text.
+     */
+    private class StartFailure(message: String) : RuntimeException(message)
+
+    private fun userFacingReason(e: Exception): String = if (e is StartFailure) e.message.orEmpty() else ""
 
     @Throws(Exception::class)
     private fun doStartCoreLoop(service: Service, vpnInterface: ParcelFileDescriptor?) {
@@ -154,7 +163,7 @@ object CoreServiceManager {
         cancelAetherWarmUp()
         if (config.configType == EConfigType.AETHER) {
             if (!AetherCoreManager.isSupported(service)) {
-                error(service.getString(R.string.aether_unsupported_abi))
+                throw StartFailure(service.getString(R.string.aether_unsupported_abi))
             }
             aetherExitHandled = false
             AetherCoreManager.start(service, config) { onAetherExit(guid) }
@@ -375,7 +384,7 @@ object CoreServiceManager {
         } catch (e: Exception) {
             val message = e.message?.takeUnless { it.isBlank() } ?: e.javaClass.simpleName
             LogUtil.e(AppConfig.TAG, "StartCore-Manager: Failed to reload core: $message", e)
-            MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_FAILURE, message)
+            MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_FAILURE, userFacingReason(e))
             false
         } finally {
             isReloading = false

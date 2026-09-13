@@ -107,8 +107,8 @@ class MainViewModel(
             }
 
             is MainServiceEvent.StateStartFailure -> {
-                // The daemon attaches a localized reason when it has one, e.g. the Aether core
-                // stopping or missing on this ABI; the generic text is the fallback.
+                // The daemon attaches a reason only when it is a localized resource string, e.g.
+                // the Aether core stopping or missing on this ABI; the generic text is the fallback.
                 val reason = event.message.trim()
                 if (reason.isEmpty()) toastError(R.string.toast_services_failure) else toastError(reason)
                 updateRunningState(false)
