@@ -606,6 +606,7 @@
     <string name="aether_log_inner_key_ready">ভিতরের হপের কী: ডিভাইস %1$s, IPv4 %2$s, IPv6 %3$s</string>
     <string name="aether_log_inner_key_missing">ভিতরের হপের কী: এখনও নিবন্ধিত নয়; প্রথম স্ক্যান বা সংযোগে নিবন্ধিত হবে</string>
     <string name="aether_renew_blocked">নতুন WARP কী নেওয়ার আগে Aether সংযোগ বিচ্ছিন্ন করুন; চলমান সংযোগ বর্তমান কী ব্যবহার করছে</string>
+    <string name="aether_scan_blocked">স্ক্যান করার আগে Aether সংযোগ বিচ্ছিন্ন করুন; স্ক্যান চলমান সংযোগের কী দিয়ে দ্বিতীয় একটি টানেল খুলবে</string>
     <string name="title_aether_core">Aether কোর</string>
     <string name="summary_aether_core">CluvexStudio-এর WARP ক্লায়েন্ট, AGPL-3.0 লাইসেন্সে অন্তর্ভুক্ত। সোর্স কোড খুলতে ট্যাপ করুন।</string>
     <string-array name="aether_scan_entries">

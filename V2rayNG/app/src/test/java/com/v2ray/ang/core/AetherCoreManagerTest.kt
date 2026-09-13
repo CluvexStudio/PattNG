@@ -314,6 +314,15 @@ class AetherCoreManagerTest {
     }
 
     @Test
+    fun theSessionProtocolIsReadFromItsArguments() {
+        val gool = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:10819", "--protocol", "gool", "--scan", "balanced")
+        assertEquals(AetherProtocol.GOOL, AetherCoreManager.protocolOf(gool))
+        assertEquals(AetherProtocol.WIREGUARD, AetherCoreManager.protocolOf(listOf("/data/app/lib/libaether.so", "--protocol", "wg")))
+        assertEquals(AetherProtocol.MASQUE, AetherCoreManager.protocolOf(listOf("/data/app/lib/libaether.so", "--protocol")))
+        assertEquals(AetherProtocol.MASQUE, AetherCoreManager.protocolOf(emptyList()))
+    }
+
+    @Test
     fun theOwnerIsReadFromTheEnvironmentTheAppGaveTheCore() {
         val environ = listOf("HOME=/data/user/0/app/files/aether", "${AetherCoreManager.OWNER_ENV}=4242", "TMPDIR=/tmp")
         assertEquals(4242, AetherCoreManager.ownerPid(environ))

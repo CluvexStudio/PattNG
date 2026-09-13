@@ -292,12 +292,13 @@ object AetherCoreManager {
     }
 
     /**
-     * True while a core owned by a living app process holds the session address, whether it is
-     * already listening or still scanning. Probing the listener alone misses the scanning phase,
-     * which is exactly when the shared key files must not be replaced.
+     * The protocol of the daemon's live session, or null when no core owned by a living app
+     * process holds the session address. It is found through /proc, so it also covers the
+     * scanning phase before the listener exists, which is exactly when the shared key files
+     * must not be replaced and no second tunnel must be opened on the same key.
      */
-    fun hasSessionProcess(context: Context): Boolean =
-        coreProcesses(context).any { isSession(it.argv, it.ownerAlive, sessionAddress) }
+    fun sessionProtocol(context: Context): AetherProtocol? =
+        coreProcesses(context).firstOrNull { isSession(it.argv, it.ownerAlive, sessionAddress) }?.let { protocolOf(it.argv) }
 
     /** A core process is stale when its owner is known to be dead or it holds the address we are about to bind. */
     internal fun isStale(argv: List<String>, ownerAlive: Boolean?, bindAddress: String?): Boolean =
@@ -325,8 +326,12 @@ object AetherCoreManager {
         }
     }
 
-    internal fun bindAddress(argv: List<String>): String? =
-        argv.indexOf("--bind").takeIf { it >= 0 }?.let { argv.getOrNull(it + 1) }
+    internal fun bindAddress(argv: List<String>): String? = valueAfter(argv, "--bind")
+
+    internal fun protocolOf(argv: List<String>): AetherProtocol = AetherProtocol.fromString(valueAfter(argv, "--protocol"))
+
+    private fun valueAfter(argv: List<String>, flag: String): String? =
+        argv.indexOf(flag).takeIf { it >= 0 }?.let { argv.getOrNull(it + 1) }
 
     internal fun ownerPid(environ: List<String>?): Int? =
         environ?.firstOrNull { it.startsWith("$OWNER_ENV=") }?.substringAfter('=')?.toIntOrNull()

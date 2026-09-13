@@ -52,9 +52,9 @@ class ServerAetherViewModel(
     private val _isRenewingIdentity = MutableStateFlow(false)
     val isRenewingIdentity: StateFlow<Boolean> = _isRenewingIdentity.asStateFlow()
 
-    /** True while the daemon runs an Aether tunnel; the shared WARP key must not change under it. */
-    private val _isSessionActive = MutableStateFlow(false)
-    val isSessionActive: StateFlow<Boolean> = _isSessionActive.asStateFlow()
+    /** The daemon's live Aether session, if any; the shared WARP key must not change under it. */
+    private val _session = MutableStateFlow<AetherSession?>(null)
+    val session: StateFlow<AetherSession?> = _session.asStateFlow()
 
     private val _log = MutableStateFlow<List<AetherLogEntry>>(emptyList())
     val log: StateFlow<List<AetherLogEntry>> = _log.asStateFlow()
@@ -72,14 +72,22 @@ class ServerAetherViewModel(
     }
 
     fun refreshSession() {
-        viewModelScope.launch { _isSessionActive.value = source.isSessionActive() }
+        viewModelScope.launch { _session.value = source.activeSession() }
     }
 
     fun scan(profile: ProfileItem) {
         if (isBusy) return
         _scanState.value = AetherScanState.Scanning
-        append(Log.INFO, AetherLogText.Resource(R.string.aether_log_scan_started))
         scanJob = viewModelScope.launch {
+            // Checked at the tap: a second tunnel on the key of a live session would disturb it.
+            val session = source.activeSession()
+            _session.value = session
+            if (session?.disturbedByScanOf(AetherProtocol.fromString(profile.aetherProtocol)) == true) {
+                _scanState.value = AetherScanState.Idle
+                append(Log.WARN, AetherLogText.Resource(R.string.aether_scan_blocked))
+                return@launch
+            }
+            append(Log.INFO, AetherLogText.Resource(R.string.aether_log_scan_started))
             val result = source.scan(profile, ::appendOutput)
             _scanState.value = result?.let(AetherScanState::Found) ?: AetherScanState.NotFound
             append(if (result == null) Log.WARN else Log.INFO, scanOutcome(result))
@@ -110,8 +118,9 @@ class ServerAetherViewModel(
         viewModelScope.launch {
             try {
                 // Checked again at the tap, the session may have come up after the screen opened.
-                if (source.isSessionActive()) {
-                    _isSessionActive.value = true
+                val session = source.activeSession()
+                _session.value = session
+                if (session != null) {
                     append(Log.WARN, AetherLogText.Resource(R.string.aether_renew_blocked))
                     return@launch
                 }

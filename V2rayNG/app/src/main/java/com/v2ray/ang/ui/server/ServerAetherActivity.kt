@@ -94,17 +94,19 @@ class ServerAetherActivity : BaseServerActivity() {
         val isCoreAvailable by viewModel.isCoreAvailable.collectAsStateWithLifecycle()
         val scanState by viewModel.scanState.collectAsStateWithLifecycle()
         val isRenewingIdentity by viewModel.isRenewingIdentity.collectAsStateWithLifecycle()
-        val isSessionActive by viewModel.isSessionActive.collectAsStateWithLifecycle()
+        val session by viewModel.session.collectAsStateWithLifecycle()
         val log by viewModel.log.collectAsStateWithLifecycle()
         var showRenewConfirm by rememberSaveable { mutableStateOf(false) }
         val isScanning = scanState == AetherScanState.Scanning
         val isBusy = isScanning || isRenewingIdentity
-        // The key is shared by every Aether profile, so a live session on any of them blocks renewal.
-        val renewBlocked = isSessionActive || isRunning
+        // The key files are shared by every Aether profile, so a live session on any of them blocks renewal.
+        val renewBlocked = session != null || isRunning
 
         val protocol = AetherProtocol.fromString(uiState.aetherProtocol)
         val usesHttp2 = protocol == AetherProtocol.MASQUE &&
             AetherTransport.fromString(uiState.aetherTransport) == AetherTransport.HTTP2
+        // A scan opens a second tunnel on this protocol's key; the running profile's own session uses it.
+        val scanBlocked = isRunning || session?.disturbedByScanOf(protocol) == true
 
         LaunchedEffect(protocol) {
             viewModel.showIdentity(protocol)
@@ -229,7 +231,7 @@ class ServerAetherActivity : BaseServerActivity() {
             ) {
                 Button(
                     onClick = { viewModel.scan(uiState.toProfileItem(initialConfig)) },
-                    enabled = isCoreAvailable && !isBusy
+                    enabled = isCoreAvailable && !isBusy && !scanBlocked
                 ) {
                     if (isScanning) {
                         ProgressMark()
@@ -241,6 +243,14 @@ class ServerAetherActivity : BaseServerActivity() {
                         Text(stringResource(R.string.action_cancel))
                     }
                 }
+            }
+            if (scanBlocked) {
+                Text(
+                    text = stringResource(R.string.aether_scan_blocked),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
             OutlinedButton(
                 onClick = { showRenewConfirm = true },

@@ -610,6 +610,7 @@
     <string name="aether_log_inner_key_ready">Ключ внутреннего узла: устройство %1$s, IPv4 %2$s, IPv6 %3$s</string>
     <string name="aether_log_inner_key_missing">Ключ внутреннего узла: ещё не зарегистрирован; будет создан при первом сканировании или подключении</string>
     <string name="aether_renew_blocked">Отключите профиль Aether, прежде чем получать новый ключ WARP: текущее подключение использует этот ключ</string>
+    <string name="aether_scan_blocked">Отключите профиль Aether, прежде чем сканировать: сканирование откроет второй туннель с ключом текущего подключения</string>
     <string name="title_aether_core">Ядро Aether</string>
     <string name="summary_aether_core">Клиент WARP от CluvexStudio, включён по лицензии AGPL-3.0. Нажмите, чтобы открыть исходный код.</string>
     <string-array name="aether_scan_entries">

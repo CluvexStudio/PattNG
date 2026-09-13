@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -35,13 +36,13 @@ class ServerAetherViewModelTest {
 
     private class FakeSource : AetherEditorSource {
         var available = true
-        var sessionActive = false
+        var session: AetherSession? = null
         var scanner: suspend (ProfileItem, (String) -> Unit) -> AetherScanResult? = { _, _ -> null }
         var renewer: suspend (ProfileItem, (String) -> Unit) -> AetherIdentityStatus? = { _, _ -> null }
         val identities = mutableMapOf<AetherProtocol, AetherIdentityStatus>()
 
         override suspend fun isCoreAvailable() = available
-        override suspend fun isSessionActive() = sessionActive
+        override suspend fun activeSession() = session
         override suspend fun scan(profile: ProfileItem, onOutput: (String) -> Unit) = scanner(profile, onOutput)
         override suspend fun identityStatus(protocol: AetherProtocol) =
             identities[protocol] ?: AetherIdentityStatus(protocol, null)
@@ -77,7 +78,7 @@ class ServerAetherViewModelTest {
         assertEquals(AetherScanState.Idle, viewModel.scanState.value)
         assertFalse(viewModel.isCoreAvailable.value)
         assertFalse(viewModel.isRenewingIdentity.value)
-        assertFalse(viewModel.isSessionActive.value)
+        assertNull(viewModel.session.value)
         assertTrue(viewModel.log.value.isEmpty())
     }
 
@@ -276,9 +277,9 @@ class ServerAetherViewModelTest {
 
     @Test
     fun aLiveSessionIsReportedWhenTheScreenOpens() {
-        source.sessionActive = true
+        source.session = AetherSession(AetherProtocol.MASQUE)
 
-        assertTrue(viewModel().isSessionActive.value)
+        assertEquals(AetherSession(AetherProtocol.MASQUE), viewModel().session.value)
     }
 
     @Test
@@ -286,23 +287,52 @@ class ServerAetherViewModelTest {
         var renewals = 0
         source.renewer = { _, _ -> renewals++; null }
         val viewModel = viewModel()
-        assertFalse(viewModel.isSessionActive.value)
+        assertNull(viewModel.session.value)
 
-        source.sessionActive = true
+        // Renewal replaces every key file, so a session of another protocol blocks it as well.
+        source.session = AetherSession(AetherProtocol.WIREGUARD)
         viewModel.renewIdentity(profile)
 
         assertEquals(0, renewals)
-        assertTrue(viewModel.isSessionActive.value)
+        assertEquals(AetherSession(AetherProtocol.WIREGUARD), viewModel.session.value)
         assertFalse(viewModel.isRenewingIdentity.value)
         val blocked = viewModel.log.value.single()
         assertEquals(resource(R.string.aether_renew_blocked), blocked.text)
         assertEquals(Log.WARN, blocked.priority)
 
-        source.sessionActive = false
+        source.session = null
         viewModel.refreshSession()
-        assertFalse(viewModel.isSessionActive.value)
+        assertNull(viewModel.session.value)
         viewModel.renewIdentity(profile)
         assertEquals(1, renewals)
+    }
+
+    @Test
+    fun aScanIsNotStartedOnTheKeyOfALiveSession() {
+        var scans = 0
+        source.scanner = { _, _ -> scans++; found }
+        val viewModel = viewModel()
+
+        source.session = AetherSession(AetherProtocol.MASQUE)
+        viewModel.scan(profile)
+
+        assertEquals(0, scans)
+        assertEquals(AetherScanState.Idle, viewModel.scanState.value)
+        assertEquals(AetherSession(AetherProtocol.MASQUE), viewModel.session.value)
+        val blocked = viewModel.log.value.single()
+        assertEquals(resource(R.string.aether_scan_blocked), blocked.text)
+        assertEquals(Log.WARN, blocked.priority)
+
+        // Only the listener was visible, so the session's key is unknown and the scan stays blocked.
+        source.session = AetherSession(protocol = null)
+        viewModel.scan(profile)
+        assertEquals(0, scans)
+
+        // A WireGuard session uses another key than this MASQUE profile, so the scan goes ahead.
+        source.session = AetherSession(AetherProtocol.WIREGUARD)
+        viewModel.scan(profile)
+        assertEquals(1, scans)
+        assertEquals(AetherScanState.Found(found), viewModel.scanState.value)
     }
 
     @Test
