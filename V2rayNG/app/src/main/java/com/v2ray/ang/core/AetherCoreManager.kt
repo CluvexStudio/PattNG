@@ -285,7 +285,7 @@ object AetherCoreManager {
             if (!isStale(core.argv, core.ownerAlive, bindAddress)) continue
             LogUtil.w(
                 AppConfig.TAG,
-                "AetherCore: killing a leftover core process, pid=${core.pid} bind=${bindAddress(core.argv)} ownerAlive=${core.ownerAlive}"
+                "AetherCore: killing a leftover core process, pid=${core.pid} bind=${bindAddressOf(core.argv)} ownerAlive=${core.ownerAlive}"
             )
             android.os.Process.killProcess(core.pid)
         }
@@ -319,11 +319,11 @@ object AetherCoreManager {
 
     /** A core process is stale when its owner is known to be dead or it holds the address we are about to bind. */
     internal fun isStale(argv: List<String>, ownerAlive: Boolean?, bindAddress: String?): Boolean =
-        ownerAlive == false || (bindAddress != null && bindAddress(argv) == bindAddress)
+        ownerAlive == false || (bindAddress != null && bindAddressOf(argv) == bindAddress)
 
     /** A core process counts as the session while its owner is not known to be dead and it holds the session address. */
     internal fun isSession(argv: List<String>, ownerAlive: Boolean?, sessionAddress: String): Boolean =
-        ownerAlive != false && bindAddress(argv) == sessionAddress
+        ownerAlive != false && bindAddressOf(argv) == sessionAddress
 
     private val sessionAddress: String get() = "${AppConfig.LOOPBACK}:$socksPort"
 
@@ -343,7 +343,7 @@ object AetherCoreManager {
         }
     }
 
-    internal fun bindAddress(argv: List<String>): String? = valueAfter(argv, "--bind")
+    internal fun bindAddressOf(argv: List<String>): String? = valueAfter(argv, "--bind")
 
     internal fun protocolOf(argv: List<String>): AetherProtocol = AetherProtocol.fromString(valueAfter(argv, "--protocol"))
 
@@ -366,7 +366,7 @@ object AetherCoreManager {
 
     private fun open(target: Session, context: Context, arguments: List<String>) {
         if (session !== target) return
-        reapStale(context, bindAddress(arguments))
+        reapStale(context, bindAddressOf(arguments))
         val process = try {
             startProcess(context, arguments)
         } catch (e: IOException) {

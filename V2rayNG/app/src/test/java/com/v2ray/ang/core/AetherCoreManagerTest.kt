@@ -287,9 +287,9 @@ class AetherCoreManagerTest {
         val session = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:10819", "--protocol", "masque")
         val scan = listOf("/data/app/lib/libaether.so", "--bind", "127.0.0.1:0", "--protocol", "masque")
 
-        assertEquals("127.0.0.1:10819", AetherCoreManager.bindAddress(session))
-        assertNull(AetherCoreManager.bindAddress(listOf("/data/app/lib/libaether.so", "--bind")))
-        assertNull(AetherCoreManager.bindAddress(emptyList()))
+        assertEquals("127.0.0.1:10819", AetherCoreManager.bindAddressOf(session))
+        assertNull(AetherCoreManager.bindAddressOf(listOf("/data/app/lib/libaether.so", "--bind")))
+        assertNull(AetherCoreManager.bindAddressOf(emptyList()))
 
         assertTrue(AetherCoreManager.isStale(session, ownerAlive = true, bindAddress = "127.0.0.1:10819"))
         assertTrue(AetherCoreManager.isStale(session, ownerAlive = null, bindAddress = "127.0.0.1:10819"))
