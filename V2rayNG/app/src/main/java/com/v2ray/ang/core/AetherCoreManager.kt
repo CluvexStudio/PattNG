@@ -209,6 +209,28 @@ object AetherCoreManager {
         false
     } ?: false
 
+    /** What the daemon's warm-up wait ends with once it stops polling. */
+    internal enum class WarmUpOutcome {
+        /** The listener accepts connections; the profile can carry traffic. */
+        LISTENING,
+
+        /** The core exited before its listener came up while the service still runs. */
+        CORE_EXITED,
+
+        /** The wait was cancelled or the service stopped meanwhile; nothing is left to report. */
+        ABANDONED,
+    }
+
+    /**
+     * Decides what the warm-up wait reports. The exit callback cannot stop the service while
+     * Xray is still starting, so a core that died in that window is caught here instead.
+     */
+    internal fun warmUpOutcome(listening: Boolean, active: Boolean, serviceRunning: Boolean): WarmUpOutcome = when {
+        !active || !serviceRunning -> WarmUpOutcome.ABANDONED
+        listening -> WarmUpOutcome.LISTENING
+        else -> WarmUpOutcome.CORE_EXITED
+    }
+
     internal fun acceptsConnections(port: Int): Boolean = try {
         Socket().use { it.connect(InetSocketAddress(AppConfig.LOOPBACK, port), PROBE_TIMEOUT_MS) }
         true

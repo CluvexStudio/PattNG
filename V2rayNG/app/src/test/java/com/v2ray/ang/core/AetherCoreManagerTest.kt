@@ -221,6 +221,30 @@ class AetherCoreManagerTest {
     }
 
     @Test
+    fun theWarmUpReportsAListenerACoreExitOrNothingAtAll() {
+        assertEquals(
+            AetherCoreManager.WarmUpOutcome.LISTENING,
+            AetherCoreManager.warmUpOutcome(listening = true, active = true, serviceRunning = true)
+        )
+        assertEquals(
+            AetherCoreManager.WarmUpOutcome.CORE_EXITED,
+            AetherCoreManager.warmUpOutcome(listening = false, active = true, serviceRunning = true)
+        )
+        assertEquals(
+            AetherCoreManager.WarmUpOutcome.ABANDONED,
+            AetherCoreManager.warmUpOutcome(listening = false, active = false, serviceRunning = true)
+        )
+        assertEquals(
+            AetherCoreManager.WarmUpOutcome.ABANDONED,
+            AetherCoreManager.warmUpOutcome(listening = true, active = true, serviceRunning = false)
+        )
+        assertEquals(
+            AetherCoreManager.WarmUpOutcome.ABANDONED,
+            AetherCoreManager.warmUpOutcome(listening = true, active = false, serviceRunning = true)
+        )
+    }
+
+    @Test
     fun aFatalErrorFromTheCoreIsAnError() {
         assertEquals(Log.ERROR, AetherCoreManager.outputPriority("Error: Api(\"too many registrations\")"))
     }

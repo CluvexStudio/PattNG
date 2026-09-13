@@ -64,6 +64,10 @@ object CoreServiceManager {
     private val aetherScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var aetherWarmUpJob: Job? = null
 
+    /** Set once an Aether exit has stopped the service, so a second report of the same exit is a no-op. */
+    @Volatile
+    private var aetherExitHandled = false
+
     @Volatile
     private var isReloading = false
 
@@ -152,13 +156,14 @@ object CoreServiceManager {
             if (!AetherCoreManager.isSupported(service)) {
                 error(service.getString(R.string.aether_unsupported_abi))
             }
+            aetherExitHandled = false
             AetherCoreManager.start(service, config) { onAetherExit(guid) }
         } else {
             AetherCoreManager.stop()
         }
 
         try {
-            launchNativeCore(service, config, result.content, vpnInterface, isReload)
+            launchNativeCore(service, guid, config, result.content, vpnInterface, isReload)
         } catch (e: Exception) {
             // Setup failed after this attempt spawned the Aether process; release it with the rest.
             AetherCoreManager.stop()
@@ -169,6 +174,7 @@ object CoreServiceManager {
     @Throws(Exception::class)
     private fun launchNativeCore(
         service: Service,
+        guid: String,
         config: ProfileItem,
         content: String,
         vpnInterface: ParcelFileDescriptor?,
@@ -215,7 +221,7 @@ object CoreServiceManager {
         }
 
         if (config.configType == EConfigType.AETHER) {
-            announceAetherWarmUp(service, isReload)
+            announceAetherWarmUp(service, guid, isReload)
         } else if (!isReload) {
             MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_START_SUCCESS, "")
         }
@@ -229,7 +235,7 @@ object CoreServiceManager {
      * running right away, the main screen and the notification show the connecting state, and the
      * start-success signal follows once the Aether SOCKS listener accepts connections.
      */
-    private fun announceAetherWarmUp(service: Service, isReload: Boolean) {
+    private fun announceAetherWarmUp(service: Service, guid: String, isReload: Boolean) {
         val connecting = service.getString(R.string.aether_core_connecting)
         MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_RUNNING, "")
         MessageHelper.sendMsg2UI(service, AppConfig.MSG_STATE_CONNECTING, connecting)
@@ -239,10 +245,16 @@ object CoreServiceManager {
             while (isActive && !listening && AetherCoreManager.isRunning) {
                 listening = AetherCoreManager.awaitListening(AETHER_WARM_UP_MS)
             }
-            if (!listening || !isActive || !isRunning()) return@launch
-            NotificationManager.setStatusLine(null)
-            val ready = if (isReload) AppConfig.MSG_STATE_RUNNING else AppConfig.MSG_STATE_START_SUCCESS
-            MessageHelper.sendMsg2UI(service, ready, "")
+            when (AetherCoreManager.warmUpOutcome(listening, isActive, isRunning())) {
+                AetherCoreManager.WarmUpOutcome.ABANDONED -> Unit
+                // The exit callback ran while Xray was still starting and found nothing to stop.
+                AetherCoreManager.WarmUpOutcome.CORE_EXITED -> onAetherExit(guid)
+                AetherCoreManager.WarmUpOutcome.LISTENING -> {
+                    NotificationManager.setStatusLine(null)
+                    val ready = if (isReload) AppConfig.MSG_STATE_RUNNING else AppConfig.MSG_STATE_START_SUCCESS
+                    MessageHelper.sendMsg2UI(service, ready, "")
+                }
+            }
         }
     }
 
@@ -254,11 +266,16 @@ object CoreServiceManager {
         NotificationManager.setStatusLine(null)
     }
 
+    /**
+     * Stops the service once the Aether core is gone while Xray still runs. Reached from the
+     * core's exit callback and from the warm-up wait, so the stop happens once per session.
+     */
     private fun onAetherExit(guid: String) {
         val control = serviceControl?.get() ?: return
         val service = control.getService()
         ContextCompat.getMainExecutor(service).execute {
-            if (AetherCoreManager.isRunning || !isRunning() || serviceControl?.get() !== control) return@execute
+            if (aetherExitHandled || AetherCoreManager.isRunning || !isRunning() || serviceControl?.get() !== control) return@execute
+            aetherExitHandled = true
             LogUtil.e(
                 AppConfig.TAG,
                 "StartCore-Manager: Aether core exited while running, stopping ${service.javaClass.simpleName}, guid=$guid"

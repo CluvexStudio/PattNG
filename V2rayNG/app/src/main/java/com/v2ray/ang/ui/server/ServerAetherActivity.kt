@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.server
 
 import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.ArrayRes
@@ -39,7 +40,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.v2ray.ang.R
@@ -58,6 +62,7 @@ import com.v2ray.ang.ui.compose.FormTextField
 import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.Utils
+import kotlinx.coroutines.launch
 
 class ServerAetherActivity : BaseServerActivity() {
 
@@ -66,6 +71,16 @@ class ServerAetherActivity : BaseServerActivity() {
     private val viewModel: ServerAetherViewModel by viewModels {
         viewModelFactory {
             initializer { ServerAetherViewModel(application, AetherEditorRepository(application)) }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // A session can start or stop while this screen is away, e.g. from the notification.
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.refreshSession()
+            }
         }
     }
 
@@ -86,10 +101,6 @@ class ServerAetherActivity : BaseServerActivity() {
         val isBusy = isScanning || isRenewingIdentity
         // The key is shared by every Aether profile, so a live session on any of them blocks renewal.
         val renewBlocked = isSessionActive || isRunning
-
-        LaunchedEffect(Unit) {
-            viewModel.refreshSession()
-        }
 
         val protocol = AetherProtocol.fromString(uiState.aetherProtocol)
         val usesHttp2 = protocol == AetherProtocol.MASQUE &&
